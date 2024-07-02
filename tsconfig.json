@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2018",
+    "esModuleInterop": true,
+    "module": "nodenext",
+    "skipLibCheck": true,
+    "allowJs": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "jotai-derive": ["./src/index.js"]
+    }
+  },
+  "exclude": ["dist", "examples"]
+}
