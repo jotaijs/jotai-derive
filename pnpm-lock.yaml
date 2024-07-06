@@ -35,6 +35,9 @@ devDependencies:
   prettier:
     specifier: ^3.3.2
     version: 3.3.2
+  remeda:
+    specifier: ^2.3.0
+    version: 2.3.0
   typescript:
     specifier: ^5.5.3
     version: 5.5.3
@@ -2102,6 +2105,12 @@ packages:
       set-function-name: 2.0.2
     dev: true
 
+  /remeda@2.3.0:
+    resolution: {integrity: sha512-J9djcCyFL9D1ZGnfiNJ6MMhcUT8BmNCT+dj2SApdrTNz+CxqW1dScPVaDCopivHTShiYXh4sRSPYKMzlGrgyQw==}
+    dependencies:
+      type-fest: 4.21.0
+    dev: true
+
   /resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
     engines: {node: '>=4'}
@@ -2383,6 +2392,11 @@ packages:
   /type-detect@4.0.8:
     resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==}
     engines: {node: '>=4'}
+    dev: true
+
+  /type-fest@4.21.0:
+    resolution: {integrity: sha512-ADn2w7hVPcK6w1I0uWnM//y1rLXZhzB9mr0a3OirzclKF1Wp6VzevUmzz/NRAWunOT6E8HrnpGY7xOfc6K57fA==}
+    engines: {node: '>=16'}
     dev: true
 
   /typed-array-buffer@1.0.2:
