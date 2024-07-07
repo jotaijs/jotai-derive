@@ -1,4 +1,4 @@
-# 👻⌛️ Jōtai - derive
+# jōtai / derive
 
 Utilities for working with **potentially** asynchronous atoms.
 
