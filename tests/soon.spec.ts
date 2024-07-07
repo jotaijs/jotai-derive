@@ -6,6 +6,20 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import { deferred } from './mockUtils.js';
 
 describe('soon', () => {
+	it('correctly infers type when used data-first', () => {
+		const promiseOrValue = 654 as Promise<number> | number;
+
+		const wrapped = soon(promiseOrValue, (value) => ({
+			inside: value,
+		}));
+
+		expect(wrapped).toEqual({ inside: 654 });
+
+		expectTypeOf(wrapped).toEqualTypeOf<
+			{ inside: number } | Promise<{ inside: number }>
+		>();
+	});
+
 	it('processes sync and async data as soon as possible', async () => {
 		const multiply = ([a, b]: readonly [number, number]) => a * b;
 
