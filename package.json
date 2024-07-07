@@ -1,71 +1,59 @@
 {
-  "name": "jotai-derive",
-  "version": "0.0.0",
-  "type": "module",
-  "description": "Jōtai utilities that help with asynchronous atoms",
-  "packageManager": "pnpm@8.15.0",
-  "author": "Iwo Plaza",
-  "license": "MIT",
-  "source": "./src/index.ts",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "require": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      },
-      "default": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    }
-  },
-  "sideEffects": false,
-  "files": [
-    "src",
-    "dist"
-  ],
-  "scripts": {
-    "compile": "rm -rf dist && pnpm run '/^compile:.*/'",
-    "compile:esm": "tsc -p tsconfig.esm.json",
-    "compile:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
-    "test": "pnpm run '/^test:.*/'",
-    "test:format": "prettier -c .",
-    "test:lint": "eslint .",
-    "test:types": "tsc -p . --noEmit",
-    "test:spec": "vitest run"
-  },
-  "keywords": [
-    "jotai",
-    "react",
-    "async",
-    "asynchronous",
-    "promise",
-    "derive",
-    "derived"
-  ],
-  "prettier": {
-    "singleQuote": true
-  },
-  "peerDependencies": {
-    "jotai": ">=2.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.14.9",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "eslint": "^9.6.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.1",
-    "jotai": "^2.8.0",
-    "jotai-derive": "link:.",
-    "prettier": "^3.3.2",
-    "remeda": "^2.3.0",
-    "typescript": "^5.5.3",
-    "vite": "^5.3.2",
-    "vitest": "^1.6.0"
-  }
+	"name": "jotai-derive",
+	"version": "0.0.0",
+	"type": "module",
+	"description": "Jōtai utilities that help with asynchronous atoms",
+	"packageManager": "pnpm@8.15.0",
+	"author": "Iwo Plaza",
+	"license": "MIT",
+	"source": "./src/index.ts",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"require": {
+				"types": "./dist/cjs/index.d.ts",
+				"default": "./dist/cjs/index.js"
+			},
+			"default": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			}
+		}
+	},
+	"sideEffects": false,
+	"files": ["src", "dist"],
+	"scripts": {
+		"compile": "rm -rf dist && pnpm run '/^compile:.*/'",
+		"compile:esm": "tsc -p tsconfig.esm.json",
+		"compile:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+		"test": "pnpm run '/^test:.*/'",
+		"test:biome": "biome check --write",
+		"test:types": "tsc -p . --noEmit",
+		"test:spec": "vitest run"
+	},
+	"keywords": [
+		"jotai",
+		"react",
+		"async",
+		"asynchronous",
+		"promise",
+		"derive",
+		"derived"
+	],
+	"peerDependencies": {
+		"jotai": ">=2.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.8.3",
+		"@types/node": "^20.14.9",
+		"happy-dom": "^14.12.3",
+		"jotai": "^2.8.0",
+		"jotai-derive": "link:.",
+		"remeda": "^2.3.0",
+		"typescript": "^5.5.3",
+		"vite": "^5.3.2",
+		"vitest": "^1.6.0"
+	}
 }
