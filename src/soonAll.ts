@@ -14,14 +14,19 @@ function isKnown<T, S>(value: ExtraPromise<T> | S): boolean {
 	return true; // not a promise, we know the value.
 }
 
+/**
+ * Given array `values`, if all elements are known (are not unresolved promises),
+ * returns an array of the same length with Awaited `values`. Otherwise, it returns a
+ * promise to that array.
+ */
 export function soonAll<T extends readonly [unknown, ...unknown[]]>(
-	input: T,
+	values: T,
 ): SoonAll<T> {
-	if (input.every(isKnown)) {
-		return input.map((el) =>
+	if (values.every(isKnown)) {
+		return values.map((el) =>
 			isPromise(el) ? el.value : el,
 		) as unknown as SoonAll<T>;
 	}
 
-	return Promise.all(input);
+	return Promise.all(values);
 }
