@@ -51,3 +51,69 @@ Building data graphs with these dual-natured (sometimes async, sometimes sync) a
 
 `jotai-derive` provides a primitive for building asynchronous data graphs
 that act on values as soon as they are available (either awaiting for them, or acting on them synchronously).
+
+## Recipes
+
+### Single async dependency
+
+```ts
+import { derive } from 'jotai-derive';
+
+// Atom<string | Promise<string>>
+const uppercaseNameAtom = derive(
+  [userAtom], // will be awaited only when necessary
+  (user) => user.name.toUppercase(),
+);
+```
+
+### Multiple async dependencies
+
+```ts
+import { derive } from 'jotai-derive';
+
+// Atom<string | Promise<string>>
+const welcomeMessageAtom = derive(
+  [userAtom, serverNameAtom],
+  (user, serverName) => `Welcome ${user.name} to ${serverName}!`,
+);
+```
+
+### Conditional dependency
+
+```ts
+// pipes allow for cleaner code when using `soon` directly.
+import { pipe } from 'remeda';
+import { soon } from 'jotai-derive';
+
+const queryAtom: Atom<RestrictedItem | Promise<RestrictedItem>> = ...;
+
+const isAdminAtom: Atom<boolean | Promise<boolean>> = ...;
+
+const restrictedItemAtom = atom((get) =>
+  pipe(
+    get(isAdminAtom),
+    soon((isAdmin) => (isAdmin ? get(queryAtom) : null))
+  )
+);
+```
+
+### Conditional dependency (multiple conditions)
+
+```ts
+// pipes allow for cleaner code when using `soon` directly.
+import { pipe } from 'remeda';
+import { soon, soonALl } from 'jotai-derive';
+
+const queryAtom: Atom<RestrictedItem | Promise<RestrictedItem>> = ...;
+
+const isAdminAtom: Atom<boolean | Promise<boolean>> = ...;
+const enabledAtom: Atom<boolean | Promise<boolean>> = ...;
+
+const restrictedItemAtom = atom((get) =>
+  pipe(
+    soonAll(get(isAdminAtom), get(enabledAtom)),
+    soon(([isAdmin, enabled]) => (isAdmin && enabled ? get(queryAtom) : null))
+  )
+);
+
+```
