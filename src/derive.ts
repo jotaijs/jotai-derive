@@ -1,5 +1,4 @@
 import { type Atom, type ExtractAtomValue, atom } from 'jotai/vanilla';
-import { pipe } from 'remeda';
 
 import { soon } from './soon.js';
 import { soonAll } from './soonAll.js';
@@ -32,11 +31,11 @@ export function derive<
 ): Atom<TValue | Promise<Awaited<TValue>>> {
 	return atom((get) => {
 		try {
-			return pipe(
+			return soon(
 				soonAll(deps.map(get) as ExtractAtomsValues<TDeps>) as PromiseOrValue<
 					AwaitAtomsValues<TDeps>
 				>,
-				soon((values) => op(...values)),
+				(values) => op(...values),
 			) as TValue | Promise<Awaited<TValue>>;
 		} catch (err) {
 			return Promise.reject(err);
