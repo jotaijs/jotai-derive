@@ -1,6 +1,6 @@
 {
 	"name": "jotai-derive",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Jōtai utilities that help with asynchronous atoms",
 	"packageManager": "pnpm@8.15.0",
