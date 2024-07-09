@@ -40,6 +40,10 @@ const uppercaseNameAtom = derive(
 );
 ```
 
+### Codesandbox example of jotai-derive + React
+
+[![Explore jotai-derive example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/jotai-derive-example-7422pk?file=%2Fsrc%2FApp.tsx%3A17%2C10)
+
 ## Motivation
 
 Jōtai offers powerful primitives for working with asynchronous data outside of the web framework (e.g. React), and allows the UI and business logic to
