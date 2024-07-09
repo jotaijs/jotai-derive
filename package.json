@@ -31,7 +31,8 @@
 		"test": "pnpm run '/^test:.*/'",
 		"test:biome": "biome check --write",
 		"test:types": "tsc -p . --noEmit",
-		"test:spec": "vitest run"
+		"test:spec": "vitest run",
+		"prepublishOnly": "pnpm compile"
 	},
 	"keywords": [
 		"jotai",
