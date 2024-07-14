@@ -1,5 +1,16 @@
 # jōtai / derive
 
+- [Overview](#overview)
+- [Notes on usage](#notes-on-usage)
+- [Recipes](#recipes)
+  - [Single async dependency](#single-async-dependency)
+  - [Multiple async dependencies](#multiple-async-dependencies)
+  - [Conditional dependency](#conditional-dependency)
+  - [Conditional dependency (multiple conditions)](#conditional-dependency-multiple-conditions)
+- [Motivation](#motivation)
+
+## Overview
+
 Utilities for working with **potentially** asynchronous atoms.
 
 ```ts
@@ -40,23 +51,13 @@ const uppercaseNameAtom = derive(
 );
 ```
 
-### Codesandbox example of jotai-derive + React
+#### Codesandbox example of jotai-derive + React
 
 [![Explore jotai-derive example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/jotai-derive-example-7422pk?file=%2Fsrc%2FApp.tsx%3A17%2C10)
 
-## Motivation
+## Notes on usage
 
-Jōtai offers powerful primitives for working with asynchronous data outside of the web framework (e.g. React), and allows the UI and business logic to
-properly integrate with the data layer. Many data-fetching integrations offer a peek into the client-side cache via atoms. When the cache
-is not yet populated, the atom has to resolve to a **Promise** of the value. However, if the value already exists in cache, and we do an optimistic update, then the value can be made available downstream
-immediately.
-
-Building data graphs with these dual-natured (sometimes async, sometimes sync) atoms as a base can lead to unnecessary rerenders, stale values and micro-suspensions (in case of React) if not handled with care.
-
-`jotai-derive` provides a primitive for building asynchronous data graphs
-that act on values as soon as they are available (either awaiting for them, or acting on them synchronously).
-
-Use of this utility can cause the [Release of Zalgo](https://blog.izs.me/2013/08/designing-apis-for-asynchrony/) if used improperly.
+Improper use of this utility can cause the [Release of Ẕ̶̨̫̹̌͊͌͑͊̕͢͟a̡̜̦̝͓͇͗̉̆̂͋̏͗̍ͅl̡̛̝͍̅͆̎̊̇̕͜͢ģ̧̧͍͓̜̲͖̹̂͋̆̃̑͗̋͌̊̏ͅǫ̷̧͓̣͚̞̣̋̂̑̊̂̀̿̀̚͟͠ͅ](https://blog.izs.me/2013/08/designing-apis-for-asynchrony/).
 If you `store.get` a dual-natured atom manually, make sure to handle both the
 asynchronous case and the synchronous case (both `await` and `soon(...)` will help).
 
@@ -125,3 +126,15 @@ const restrictedItemAtom = atom((get) =>
 );
 
 ```
+
+## Motivation
+
+Jōtai offers powerful primitives for working with asynchronous data outside of the web framework (e.g. React), and allows the UI and business logic to
+properly integrate with the data layer. Many data-fetching integrations offer a peek into the client-side cache via atoms. When the cache
+is not yet populated, the atom has to resolve to a **Promise** of the value. However, if the value already exists in cache, and we do an optimistic update, then the value can be made available downstream
+immediately.
+
+Building data graphs with these dual-natured (sometimes async, sometimes sync) atoms as a base can lead to unnecessary rerenders, stale values and micro-suspensions (in case of React) if not handled with care.
+
+`jotai-derive` provides a primitive for building asynchronous data graphs
+that act on values as soon as they are available (either awaiting for them, or acting on them synchronously).
