@@ -56,6 +56,10 @@ Building data graphs with these dual-natured (sometimes async, sometimes sync) a
 `jotai-derive` provides a primitive for building asynchronous data graphs
 that act on values as soon as they are available (either awaiting for them, or acting on them synchronously).
 
+Use of this utility can cause the [Release of Zalgo](https://blog.izs.me/2013/08/designing-apis-for-asynchrony/) if used improperly.
+If you `store.get` a dual-natured atom manually, make sure to handle both the
+asynchronous case and the synchronous case (both `await` and `soon(...)` will help).
+
 ## Recipes
 
 ### Single async dependency
