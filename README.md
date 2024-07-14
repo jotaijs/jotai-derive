@@ -51,9 +51,10 @@ const uppercaseNameAtom = derive(
 );
 ```
 
-#### Codesandbox example of jotai-derive + React
+> Codesandbox example of jotai-derive + React:
+> 
+> [![Explore jotai-derive example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/jotai-derive-example-7422pk?file=%2Fsrc%2FApp.tsx%3A17%2C10)
 
-[![Explore jotai-derive example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/jotai-derive-example-7422pk?file=%2Fsrc%2FApp.tsx%3A17%2C10)
 
 ## Notes on usage
 
