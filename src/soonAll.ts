@@ -2,7 +2,7 @@ import { type ExtraPromise, isPromise } from './isPromise.js';
 
 type PromiseOrValue<T> = Promise<T> | T;
 
-type SoonAll<T extends readonly [unknown, ...unknown[]]> = PromiseOrValue<{
+type SoonAll<T extends readonly unknown[]> = PromiseOrValue<{
 	[Index in keyof T]: Awaited<T[Index]>;
 }>;
 
@@ -19,9 +19,11 @@ function isKnown<T, S>(value: ExtraPromise<T> | S): boolean {
  * returns an array of the same length with Awaited `values`. Otherwise, it returns a
  * promise to that array.
  */
-export function soonAll<T extends readonly [unknown, ...unknown[]]>(
+export function soonAll<T extends readonly [unknown, ...unknown[]] | []>(
 	values: T,
-): SoonAll<T> {
+): SoonAll<T>;
+export function soonAll<T extends readonly unknown[]>(values: T): SoonAll<T>;
+export function soonAll<T extends readonly unknown[]>(values: T): SoonAll<T> {
 	if (values.every(isKnown)) {
 		return values.map((el) =>
 			isPromise(el) ? el.value : el,

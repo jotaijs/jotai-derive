@@ -50,4 +50,16 @@ describe('soonAll', () => {
 
 		await expect(result).rejects.toEqual({ error: 'test' });
 	});
+
+	it('handles an array as input', () => {
+		const array = [1, 2, 3].map((x) => x * 2);
+		const result = soonAll(array);
+		expectTypeOf(array).toEqualTypeOf<number[]>();
+		expectTypeOf(result).toEqualTypeOf<number[] | Promise<number[]>>();
+	});
+
+	it('handles an empty tuple as input', () => {
+		const result = soonAll([]);
+		expectTypeOf(result).toEqualTypeOf<[] | Promise<[]>>();
+	});
 });
