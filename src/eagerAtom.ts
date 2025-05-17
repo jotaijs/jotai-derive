@@ -51,8 +51,8 @@ function resolveSuspension<T>(
 				return resolveSuspension(compute, signal);
 			});
 		}
-		// Rethrowing other errors
-		throw e;
+		// Rejecting other errors
+		return Promise.reject(e);
 	}
 }
 

@@ -20,6 +20,27 @@ describe('eagerAtom', () => {
 		expectTypeOf(doubledAtom).toEqualTypeOf<Atom<number | Promise<number>>>();
 	});
 
+	it('returns a rejected promise on sync dependency throw', async () => {
+		const error = new Error('');
+		const invalidAtom = atom<number>(() => {
+			throw error;
+		});
+		const doubledAtom = eagerAtom((get) => get(invalidAtom) * 2);
+
+		await expect(store.get(doubledAtom)).rejects.toThrowError(error);
+	});
+
+	it('returns a rejected promise on async dependency throw', async () => {
+		const error = new Error('');
+		const invalidAtom = atom<Promise<number>>(async () => {
+			await 'foo';
+			throw error;
+		});
+		const doubledAtom = eagerAtom((get) => get(invalidAtom) * 2);
+
+		await expect(store.get(doubledAtom)).rejects.toThrowError(error);
+	});
+
 	it('derives an async atom', async () => {
 		const computation = deferred<number>();
 		const countAtom = atom(computation.promise);
