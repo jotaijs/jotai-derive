@@ -1,11 +1,70 @@
+import type { Atom } from 'jotai';
 import { eagerAtom } from 'jotai-derive';
 import { atom, createStore } from 'jotai/vanilla';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
+import { deferred } from './mockUtils.js';
 
 describe('eagerAtom', () => {
-	it('works', async () => {
-		const petsAtom = atom(async (get) => {
-			await new Promise((resolve) => setTimeout(resolve, 100));
+	let store: ReturnType<typeof createStore>;
+
+	beforeEach(() => {
+		store = createStore();
+	});
+
+	it('derives a sync atom', () => {
+		const countAtom = atom(12);
+		const doubledAtom = eagerAtom((get) => get(countAtom) * 2);
+
+		expect(store.get(doubledAtom)).toEqual(24);
+		// the processing is sync, but it could still throw, which would return a rejected promise.
+		expectTypeOf(doubledAtom).toEqualTypeOf<Atom<number | Promise<number>>>();
+	});
+
+	it('derives an async atom', async () => {
+		const computation = deferred<number>();
+		const countAtom = atom(computation.promise);
+		const doubledAtom = eagerAtom((get) => get(countAtom) * 2);
+
+		const doubled = store.get(doubledAtom);
+
+		expect(doubled).toBeInstanceOf(Promise);
+
+		computation.resolve(12);
+
+		await expect(doubled).resolves.toEqual(24);
+
+		expectTypeOf(doubledAtom).toEqualTypeOf<Atom<number | Promise<number>>>();
+	});
+
+	it('derives a couple of sync atoms', () => {
+		const aAtom = atom(3);
+		const bAtom = atom(5);
+		const productAtom = eagerAtom((get) => get(aAtom) * get(bAtom));
+
+		expect(store.get(productAtom)).toEqual(15);
+	});
+
+	it('derives a couple of async atoms', async () => {
+		const aTask = deferred<number>();
+		const bTask = deferred<number>();
+		const aAtom = atom(aTask.promise);
+		const bAtom = atom(bTask.promise);
+		const productAtom = eagerAtom((get) => get(aAtom) * get(bAtom));
+
+		const product = store.get(productAtom);
+
+		expect(product).toBeInstanceOf(Promise);
+
+		aTask.resolve(3);
+		bTask.resolve(5);
+
+		await expect(product).resolves.toBe(15);
+	});
+
+	it('computes synchronously if asynchronous dependencies are fulfilled', async () => {
+		const delay = deferred<void>();
+		const petsAtom = atom(async () => {
+			await delay.promise; // Simulating a remote API call
 			return ['dog', 'cat', 'meerkat', 'parrot', 'mouse'];
 		});
 		const filterAtom = atom('');
@@ -14,12 +73,13 @@ describe('eagerAtom', () => {
 			return get(petsAtom).filter((name) => name.includes(filter));
 		});
 
-		const store = createStore();
-
 		const petsPromise = store.get(petsAtom);
-		await petsPromise;
-		let filteredPets = store.get(filteredPetsAtom);
+		expect(petsPromise).toBeInstanceOf(Promise);
 
+		delay.resolve();
+		await petsPromise;
+
+		let filteredPets = store.get(filteredPetsAtom);
 		expect(filteredPets).toMatchInlineSnapshot(`
 			[
 			  "dog",
@@ -29,7 +89,9 @@ describe('eagerAtom', () => {
 			  "mouse",
 			]
 		`);
+
 		store.set(filterAtom, 'at');
+
 		filteredPets = store.get(filteredPetsAtom);
 		expect(filteredPets).toMatchInlineSnapshot(`
 			[
