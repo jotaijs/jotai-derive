@@ -1,5 +1,5 @@
 import type { Atom } from 'jotai';
-import { eagerAtom } from 'jotai-derive';
+import { eagerAtom } from 'jotai-eager';
 import { atom, createStore } from 'jotai/vanilla';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 import { deferred } from './mockUtils.js';

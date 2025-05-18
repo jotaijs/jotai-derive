@@ -1,4 +1,4 @@
-import { derive } from 'jotai-derive';
+import { derive } from 'jotai-eager';
 import { type Atom, atom, createStore } from 'jotai/vanilla';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 

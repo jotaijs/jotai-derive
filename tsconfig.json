@@ -11,7 +11,7 @@
 		"exactOptionalPropertyTypes": true,
 		"baseUrl": ".",
 		"paths": {
-			"jotai-derive": ["./src/index.js"]
+			"jotai-eager": ["./src/index.js"]
 		}
 	},
 	"exclude": ["dist", "examples"]

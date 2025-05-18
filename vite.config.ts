@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
 	}
 
 	return {
-		resolve: { alias: { 'jotai-derive': resolve('src') } },
+		resolve: { alias: { 'jotai-eager': resolve('src') } },
 		test: {
 			environment: 'happy-dom',
 		},
