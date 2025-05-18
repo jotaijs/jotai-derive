@@ -3,6 +3,8 @@
 > Formerly known as `jotai-derive`
 
 - [Overview](#overview)
+- [Recipes](#recipes)
+  - [Avoiding request waterfalls](#avoiding-request-waterfalls)
 - [Caveats](#caveats)
 - [Advanced usage](#advanced-usage)
 - [Motivation](#motivation)
@@ -18,24 +20,29 @@ suspensions. Eager atoms are a direct replacement for vanilla atoms with a custo
 - The read function has to be synchronous, because eager atoms handle asynchronicity transparently.
 - Eager atoms have to be pure (even more so than vanilla atoms). That's because their read function can be executed multiple times on dependency change.
 
+Let's say we have an atom that fetches names of pets from an API, and a filter atom:
 ```ts
 const petsAtom = atom<Promise<string[]>>(...);
 const filterAtom = atom('cat');
+```
 
-// -- Without `jotai-eager`
-// always returns a promise, even though the result
-// could be computed eagerly if the `filterAtom` was
-// the only changed dependency.
+To create an atom of filtered pets using vanilla atoms, we would do the following:
+
+```ts
 const filteredPetsAtom = atom(async (get) => {
   const filter = get(filterAtom);
   const pets = await get(petsAtom);
   return pets.filter(name => name.includes(filter));
 }); // => Atom<Promise<string[]>>
+```
 
-// -- With `jotai-eager`
-// the type reflects the eager behavior of this atom.
-// It's value will be `string[]` if the only thing that
-// changed is the filter!
+`filteredPetsAtom` always returns a promise, even though the result
+could be computed eagerly if the `filterAtom` was
+the only changed dependency. We can fix that with **jōtai eager**:
+
+```ts
+import { eagerAtom } from 'jotai-eager';
+
 const filteredPetsAtom = eagerAtom((get) => {
   const filter = get(filterAtom);
   const pets = get(petsAtom); // ✨ no await ✨
@@ -43,10 +50,26 @@ const filteredPetsAtom = eagerAtom((get) => {
 }); // => Atom<Promise<string[]> | string[]>
 ```
 
+Now, the type reflects the eager behavior of this atom.
+It's value will be `string[]` if the only thing that
+changed is the filter, and `Promise<string[]>` otherwise!
+
 > Codesandbox example of jotai-eager + React:
 > 
 > [![Explore jotai-eager example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/jotai-derive-example-7422pk?file=%2Fsrc%2FApp.tsx%3A17%2C10)
 
+## Recipes
+
+### Avoiding request waterfalls
+
+If your atom has multiple async dependencies, best to jump start all of them at once and wait for their results, instead of awaiting them sequentially. In vanilla async atoms, `Promise.all(...)` is the API to use, but in eager atoms, use the `get.all()` API:
+
+```ts
+const myMessages = eagerAtom((get) => {
+  const [user, messages] = get.all([userAtom, messagesAtom]);
+  return messages.filter((msg) => msg.authorId === user.id);
+}); // => Atom<Message[] | Promise<Message[]>>
+```
 
 ## Caveats
 
