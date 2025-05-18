@@ -21,6 +21,8 @@ type AwaitAtomsValues<
  * Awaits all `deps` if necessary, then runs `op` given all deps in the same order.
  * If computing the value fails (throws), a rejected Promise is returned no matter if
  * the processing happened synchronously or not.
+ *
+ * @deprecated In favor of the eagerAtom() API.
  */
 export function derive<
 	TDeps extends readonly [Atom<unknown>, ...Atom<unknown>[]],

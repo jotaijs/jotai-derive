@@ -19,7 +19,7 @@ function isKnown<T, S>(value: ExtraPromise<T> | S): boolean {
  * returns an array of the same length with Awaited `values`. Otherwise, it returns a
  * promise to that array.
  */
-export function soonAll<T extends readonly [unknown, ...unknown[]] | []>(
+export function soonAll<T extends readonly unknown[] | []>(
 	values: T,
 ): SoonAll<T>;
 export function soonAll<T extends readonly unknown[]>(values: T): SoonAll<T>;
