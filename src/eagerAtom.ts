@@ -56,11 +56,12 @@ function resolveSuspension<T>(
 	}
 }
 
+type AsyncReadFunctionError =
+	'ERROR: The `read` function of eager atoms cannot be asynchronous, or return a Promise.';
+
 export function eagerAtom<Value>(
 	...args: Value extends PromiseLike<unknown>
-		? [
-				'ERROR: The `read` function of eager atoms cannot be asynchronous, or return a Promise.',
-			]
+		? [AsyncReadFunctionError]
 		: [read: Read<Value>]
 ): Atom<Promise<Value> | Value> {
 	const [read] = args as [Read<Value>];
