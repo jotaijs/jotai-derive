@@ -1,4 +1,4 @@
-import { isPromise } from './isPromise.js';
+import { getPromiseExtra } from './isPromise.js';
 
 /**
  * Executes `process` with `data` as input synchronously if `data` is known, meaning
@@ -47,22 +47,24 @@ function _soonImpl<TInput, TOutput>(
 	data: TInput,
 	process: (knownData: NoInfer<Awaited<TInput>>) => TOutput,
 ): TOutput | Promise<Awaited<TOutput>> {
-	if (isPromise(data)) {
-		if (data.status === 'fulfilled') {
+	const extra = getPromiseExtra<Awaited<TInput>>(data);
+
+	if (extra) {
+		if (extra.status === 'fulfilled') {
 			// can process the value earlier
-			return process(data.value as Awaited<TInput>);
+			return process(extra.value);
 		}
 
-		if (data.status === 'rejected') {
+		if (extra.status === 'rejected') {
 			// To keep the error handling behavior consistent, lets
 			// always return a rejected promise, even if the processing
 			// can be done in sync.
-			return Promise.reject(data.reason);
+			return Promise.reject(extra.reason);
 		}
 
-		return data.then((value) => process(value as Awaited<TInput>)) as Promise<
-			Awaited<TOutput>
-		>;
+		return (data as Promise<Awaited<TInput>>).then((value) =>
+			process(value),
+		) as Promise<Awaited<TOutput>>;
 	}
 
 	try {
