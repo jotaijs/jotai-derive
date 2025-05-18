@@ -1,130 +1,127 @@
-# jōtai / derive
+# 👻⏰ Jōtai Eager
+
+> Formerly known as `jotai-derive`
 
 - [Overview](#overview)
-- [Notes on usage](#notes-on-usage)
-- [Recipes](#recipes)
-  - [Single async dependency](#single-async-dependency)
-  - [Multiple async dependencies](#multiple-async-dependencies)
-  - [Conditional dependency](#conditional-dependency)
-  - [Conditional dependency (multiple conditions)](#conditional-dependency-multiple-conditions)
+- [Caveats](#caveats)
+- [Advanced usage](#advanced-usage)
 - [Motivation](#motivation)
 
 ## Overview
 
-Utilities for working with **potentially** asynchronous atoms.
-
-```ts
-// An example of a dual-natured atom, meaning
-// sometimes we do not yet know the value
-// (fetch is ongoing), but sometimes we act
-// on the value already in cache.
-const userAtom: Atom<User | Promise<User>> =
-  atomWithQuery(...);
-
+```sh
+npm install jotai-eager
 ```
 
-```ts
-// Without `jotai-derive`
-
-import { atom } from 'jotai';
-
-// Type is Atom<Promise<string>>, even though
-// get(userAtom) does not always return a promise,
-// meaning we could compute `uppercaseNameAtom`
-// synchronously.
-const uppercaseNameAtom = atom(async (get) => {
-  const user = await get(userAtom);
-  return user.name.toUppercase();
-});
-
-```
+The **jōtai eager** library lets you build asynchronous data graphs without unnecessary
+suspensions. Eager atoms are a direct replacement for vanilla atoms with a custom async read function, with a few differences:
+- The read function has to be synchronous, because eager atoms handle asynchronicity transparently.
+- Eager atoms have to be pure (even more so than vanilla atoms). That's because their read function can be executed multiple times on dependency change.
 
 ```ts
-// With `jotai-derive`
+const petsAtom = atom<Promise<string[]>>(...);
+const filterAtom = atom('cat');
 
-import { derive } from 'jotai-derive';
+// -- Without `jotai-eager`
+// always returns a promise, even though the result
+// could be computed eagerly if the `filterAtom` was
+// the only changed dependency.
+const filteredPetsAtom = atom(async (get) => {
+  const filter = get(filterAtom);
+  const pets = await get(petsAtom);
+  return pets.filter(name => name.includes(filter));
+}); // => Atom<Promise<string[]>>
 
-// Atom<string | Promise<string>>
-const uppercaseNameAtom = derive(
-  [userAtom], // will be awaited only when necessary
-  (user) => user.name.toUppercase(),
-);
+// -- With `jotai-eager`
+// the type reflects the eager behavior of this atom.
+// It's value will be `string[]` if the only thing that
+// changed is the filter!
+const filteredPetsAtom = eagerAtom((get) => {
+  const filter = get(filterAtom);
+  const pets = get(petsAtom); // ✨ no await ✨
+  return pets.filter(name => name.includes(filter));
+}); // => Atom<Promise<string[]> | string[]>
 ```
 
-> Codesandbox example of jotai-derive + React:
+> Codesandbox example of jotai-eager + React:
 > 
-> [![Explore jotai-derive example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/jotai-derive-example-7422pk?file=%2Fsrc%2FApp.tsx%3A17%2C10)
+> [![Explore jotai-eager example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/jotai-derive-example-7422pk?file=%2Fsrc%2FApp.tsx%3A17%2C10)
 
 
-## Notes on usage
+## Caveats
+
+### Using `try` & `catch` inside eager atoms
+
+Eager atoms internally use exceptions to "suspend" computation of the atom until an async dependency is fulfilled (similar to React's suspense behavior, but does not require React to work). This means that using exception handling inside of eager atoms has to be instrumented with an additional call to `isEagerError`.
+
+```ts
+import { eagerAtom, isEagerError } from 'jotai-eager';
+
+const fooAtom = eagerAtom((get) => {
+  try {
+    // ...
+  } catch (e) {
+    if (isEagerError(e)) {
+      // Rethrow the error to be handled by `jotai-eager`
+      throw e;
+    }
+
+    // ...
+  }
+});
+```
+
+### Make note of the dual nature
 
 Improper use of this utility can cause the [Release of Ẕ̶̨̫̹̌͊͌͑͊̕͢͟a̡̜̦̝͓͇͗̉̆̂͋̏͗̍ͅl̡̛̝͍̅͆̎̊̇̕͜͢ģ̧̧͍͓̜̲͖̹̂͋̆̃̑͗̋͌̊̏ͅǫ̷̧͓̣͚̞̣̋̂̑̊̂̀̿̀̚͟͠ͅ](https://blog.izs.me/2013/08/designing-apis-for-asynchrony/).
 If you `store.get` a dual-natured atom manually, make sure to handle both the
 asynchronous case and the synchronous case (both `await` and `soon(...)` will help).
 
-## Recipes
+## Advanced usage
 
-### Single async dependency
-
-```ts
-import { derive } from 'jotai-derive';
-
-// Atom<string | Promise<string>>
-const uppercaseNameAtom = derive(
-  [userAtom], // will be awaited only when necessary
-  (user) => user.name.toUppercase(),
-);
-```
-
-### Multiple async dependencies
-
-```ts
-import { derive } from 'jotai-derive';
-
-// Atom<string | Promise<string>>
-const welcomeMessageAtom = derive(
-  [userAtom, serverNameAtom],
-  (user, serverName) => `Welcome ${user.name} to ${serverName}!`,
-);
-```
+If the limitations of eager atoms are too restrictive for your use case (the purity of the read function), the library exports `soon` and `soonAll` functions that can
+be used to perform sync/async transformations on data eagerly, on a more fine-grained level.
 
 ### Conditional dependency
 
 ```ts
-// pipes allow for cleaner code when using `soon` directly.
-import { pipe } from 'remeda';
-import { soon } from 'jotai-derive';
+import { soon } from 'jotai-eager';
 
-const queryAtom: Atom<RestrictedItem | Promise<RestrictedItem>> = ...;
+declare const queryAtom:
+  Atom<RestrictedItem | Promise<RestrictedItem>>;
+declare const isAdminAtom:
+  Atom<boolean | Promise<boolean>>;
 
-const isAdminAtom: Atom<boolean | Promise<boolean>> = ...;
-
-const restrictedItemAtom = atom((get) =>
-  pipe(
-    get(isAdminAtom),
-    soon((isAdmin) => (isAdmin ? get(queryAtom) : null))
-  )
-);
+// Atom<RestrictedItem | null | Promise<RestrictedItem | null>>
+const restrictedItemAtom = atom((get) => {
+  const isAdmin = get(isAdminAtom);
+  return soon(
+    isAdmin,
+    (isAdmin) => isAdmin ? get(queryAtom) : null,
+  );
+});
 ```
 
 ### Conditional dependency (multiple conditions)
 
 ```ts
-// pipes allow for cleaner code when using `soon` directly.
-import { pipe } from 'remeda';
-import { soon, soonALl } from 'jotai-derive';
+import { soon, soonAll } from 'jotai-eager';
 
-const queryAtom: Atom<RestrictedItem | Promise<RestrictedItem>> = ...;
+declare const queryAtom:
+  Atom<RestrictedItem | Promise<RestrictedItem>>;
+declare const isAdminAtom:
+  Atom<boolean | Promise<boolean>>;
+declare const enabledAtom:
+  Atom<boolean | Promise<boolean>>;
 
-const isAdminAtom: Atom<boolean | Promise<boolean>> = ...;
-const enabledAtom: Atom<boolean | Promise<boolean>> = ...;
-
-const restrictedItemAtom = atom((get) =>
-  pipe(
+// Atom<RestrictedItem | null | Promise<RestrictedItem | null>>
+const restrictedItemAtom = atom((get) => {
+  return soon(
     soonAll(get(isAdminAtom), get(enabledAtom)),
-    soon(([isAdmin, enabled]) => (isAdmin && enabled ? get(queryAtom) : null))
-  )
-);
+    ([isAdmin, enabled]) =>
+      isAdmin && enabled ? get(queryAtom) : null,
+  );
+});
 
 ```
 
@@ -137,5 +134,5 @@ immediately.
 
 Building data graphs with these dual-natured (sometimes async, sometimes sync) atoms as a base can lead to unnecessary rerenders, stale values and micro-suspensions (in case of React) if not handled with care.
 
-`jotai-derive` provides a primitive for building asynchronous data graphs
+`jotai-eager` provides a primitive for building asynchronous data graphs
 that act on values as soon as they are available (either awaiting for them, or acting on them synchronously).
