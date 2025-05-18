@@ -1,5 +1,5 @@
 import type { Atom } from 'jotai';
-import { eagerAtom } from 'jotai-eager';
+import { eagerAtom, isEagerError } from 'jotai-eager';
 import { atom, createStore } from 'jotai/vanilla';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 import { deferred } from './mockUtils.js';
@@ -120,5 +120,61 @@ describe('eagerAtom', () => {
 			  "meerkat",
 			]
 		`);
+	});
+
+	describe('get.all', () => {
+		it('handles sync atoms as input', async () => {
+			const nameAtom = atom('Bob');
+			const levelAtom = atom(2);
+
+			const labelAtom = eagerAtom((get) => {
+				const [name, level] = get.all([nameAtom, levelAtom]);
+
+				expectTypeOf(name).toEqualTypeOf<string>();
+				expectTypeOf(level).toEqualTypeOf<number>();
+
+				return `${name} (lvl ${level})`;
+			});
+
+			expect(store.get(labelAtom)).toMatchInlineSnapshot(`"Bob (lvl 2)"`);
+		});
+
+		it('jump-starts all async atoms before suspending', async () => {
+			const events: string[] = [];
+			const oneAtom = atom(async () => {
+				events.push('"one" computed');
+				return 1;
+			});
+			const twoAtom = atom(async () => {
+				events.push('"two" computed');
+				return 2;
+			});
+			const threeAtom = atom(async () => {
+				events.push('"three" computed');
+				return 3;
+			});
+
+			const sumAtom = eagerAtom((get) => {
+				try {
+					const [one, two, three] = get.all([oneAtom, twoAtom, threeAtom]);
+					return one + two + three;
+				} catch (e) {
+					if (isEagerError(e)) {
+						events.push('suspended');
+					}
+					throw e;
+				}
+			});
+
+			expect(store.get(sumAtom)).resolves.toEqual(6);
+			expect(events).toMatchInlineSnapshot(`
+				[
+				  ""one" computed",
+				  ""two" computed",
+				  ""three" computed",
+				  "suspended",
+				]
+			`);
+		});
 	});
 });

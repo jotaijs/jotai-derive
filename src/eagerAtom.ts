@@ -1,7 +1,14 @@
 import { type Atom, atom } from 'jotai/vanilla';
 import { getPromiseExtra } from './isPromise.js';
+import type { ExtractAtomValue } from 'jotai';
 
-type EagerGetter = <Value>(atom: Atom<Value>) => Awaited<Value>;
+type AwaitedAtoms<T extends readonly Atom<unknown>[]> = {
+	[K in keyof T]: Awaited<ExtractAtomValue<T[K]>>;
+};
+
+type EagerGetter = (<Value>(atom: Atom<Value>) => Awaited<Value>) & {
+	all: <T extends readonly Atom<unknown>[] | []>(atoms: T) => AwaitedAtoms<T>;
+};
 type Read<Value> = (get: EagerGetter) => Value;
 
 const NotYet = Symbol(
@@ -74,8 +81,15 @@ export function eagerAtom<Value>(
 	const [read] = args as [Read<Value>];
 
 	return atom((get, { signal }) => {
-		const eagerGet = <Value>(atomToGet: Atom<Value>): Awaited<Value> =>
-			unwrapPromise(get(atomToGet));
+		const eagerGet = (<Value>(atomToGet: Atom<Value>): Awaited<Value> =>
+			unwrapPromise(get(atomToGet))) as EagerGetter;
+
+		eagerGet.all = <T extends readonly Atom<unknown>[]>(atoms: T) =>
+			atoms
+				// Jump-starting every asynchronous atom.
+				.map((a) => get(a))
+				// Unwrapping them one by one, sequentially.
+				.map((v) => unwrapPromise(v)) as AwaitedAtoms<T>;
 
 		return resolveSuspension(() => read(eagerGet), signal);
 	});
