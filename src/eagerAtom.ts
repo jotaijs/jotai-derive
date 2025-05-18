@@ -1,5 +1,5 @@
 import { type Atom, atom } from 'jotai/vanilla';
-import { getPromiseExtra, isPromise } from './isPromise.js';
+import { getPromiseExtra } from './isPromise.js';
 
 type EagerGetter = <Value>(atom: Atom<Value>) => Awaited<Value>;
 type Read<Value> = (get: EagerGetter) => Value;
@@ -10,10 +10,6 @@ const NotYet = Symbol(
 
 interface EagerError {
 	[NotYet]: Promise<unknown>;
-}
-
-export function isEagerError(error: unknown): boolean {
-	return !!(error as EagerError)?.[NotYet];
 }
 
 function unwrapPromise<T>(promise: T): Awaited<T> {
@@ -59,6 +55,17 @@ function resolveSuspension<T>(
 type AsyncReadFunctionError =
 	'ERROR: The `read` function of eager atoms cannot be asynchronous, or return a Promise.';
 
+/**
+ * A drop-in replacement for vanilla atoms wih custom async read functions, that
+ * removes unnecessary suspensions. The read function is written as if it was
+ * synchronous, which allows for:
+ * - eager computation of the atom's value in case all of its dependencies are fulfilled
+ *   (which is not the case for vanilla async atoms).
+ * - interrupting computation if a dependency is not yet fulfilled.
+ *
+ * @param args A sync read function that can read async atoms directly using the `get` parameter.
+ * @returns An eager atom
+ */
 export function eagerAtom<Value>(
 	...args: Value extends PromiseLike<unknown>
 		? [AsyncReadFunctionError]
@@ -72,4 +79,13 @@ export function eagerAtom<Value>(
 
 		return resolveSuspension(() => read(eagerGet), signal);
 	});
+}
+
+/**
+ * Only useful if the eager atom's read function involves a try {} catch {}. Can be used to
+ * detect whether a thrown value originates from `jotai-eager`, in which case should be rethrown.
+ * @returns True if `error` is a suspension trigger originating from `jotai-eager`.
+ */
+export function isEagerError(error: unknown): boolean {
+	return !!(error as EagerError)?.[NotYet];
 }
