@@ -1,8 +1,19 @@
-import { Suspense } from 'react';
-import { atom, useAtomValue, useSetAtom, type Atom, type SetStateAction, type WritableAtom } from 'jotai';
-import './App.css';
-import { refetchUserAtom, updateOptimisticallyAtom, userAtom } from './userAtom';
+import {
+  type Atom,
+  type SetStateAction,
+  type WritableAtom,
+  atom,
+  useAtomValue,
+  useSetAtom,
+} from 'jotai';
 import { eagerAtom } from 'jotai-eager';
+import { Suspense } from 'react';
+import {
+  refetchUserAtom,
+  updateOptimisticallyAtom,
+  userAtom,
+} from './userAtom';
+import './App.css';
 
 type CounterAtom = WritableAtom<number, [SetStateAction<number>], void>;
 type NameAtom = Atom<Promise<string> | string>;
@@ -22,7 +33,7 @@ function SuspenseCounter(props: { counterAtom: CounterAtom }) {
   const { counterAtom } = props;
   const count = useAtomValue(counterAtom);
 
-  return <p>Suspensions: {count}</p>
+  return <p>Suspensions: {count}</p>;
 }
 
 function SuspenseFallback(props: { counterAtom: CounterAtom }) {
@@ -34,14 +45,18 @@ function SuspenseFallback(props: { counterAtom: CounterAtom }) {
 
 function NameDisplay(props: { nameAtom: NameAtom }) {
   const name = useAtomValue(props.nameAtom);
-  return <p>Name: {name}</p>
+  return <p>Name: {name}</p>;
 }
 
-function Panel(props: { title: string, nameAtom: NameAtom, counterAtom: CounterAtom }) {
+function Panel(props: {
+  title: string;
+  nameAtom: NameAtom;
+  counterAtom: CounterAtom;
+}) {
   const { title, nameAtom, counterAtom } = props;
 
   return (
-    <section className='panel'>
+    <section className="panel">
       <SuspenseCounter counterAtom={counterAtom} />
       <h2>{title}</h2>
       <Suspense fallback={<SuspenseFallback counterAtom={counterAtom} />}>
@@ -68,9 +83,17 @@ function App() {
           Update optimistically
         </button>
       </div>
-      <div className='row'>
-        <Panel title='atom()' nameAtom={vanillaUppercaseNameAtom} counterAtom={vanillaSuspensionsAtom} />
-        <Panel title='eagerAtom()' nameAtom={eagerUppercaseNameAtom} counterAtom={eagerSuspensionsAtom} />
+      <div className="row">
+        <Panel
+          title="atom()"
+          nameAtom={vanillaUppercaseNameAtom}
+          counterAtom={vanillaSuspensionsAtom}
+        />
+        <Panel
+          title="eagerAtom()"
+          nameAtom={eagerUppercaseNameAtom}
+          counterAtom={eagerSuspensionsAtom}
+        />
       </div>
     </>
   );
