@@ -166,7 +166,7 @@ describe('eagerAtom', () => {
 				}
 			});
 
-			expect(store.get(sumAtom)).resolves.toEqual(6);
+			await expect(store.get(sumAtom)).resolves.toEqual(6);
 			expect(events).toMatchInlineSnapshot(`
 				[
 				  ""one" computed",
