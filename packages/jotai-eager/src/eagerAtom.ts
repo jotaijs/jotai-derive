@@ -1,6 +1,6 @@
 import { atom } from 'jotai/vanilla';
 import type { Atom, ExtractAtomValue } from 'jotai/vanilla';
-import { getPromiseExtra } from './isPromise.js';
+import { getPromiseMeta, setPromiseMeta } from './isPromise.js';
 
 type AwaitedAtoms<T extends readonly Atom<unknown>[]> = {
   [K in keyof T]: Awaited<ExtractAtomValue<T[K]>>;
@@ -20,22 +20,22 @@ interface EagerError {
 }
 
 function unwrapPromise<T>(promise: T): Awaited<T> {
-  const extra = getPromiseExtra(promise);
+  const meta = getPromiseMeta(promise);
 
-  if (!extra) {
+  if (!meta) {
     // Not a promise
     return promise as Awaited<T>;
   }
 
-  if (extra.status === 'pending') {
+  if (meta.status === 'pending') {
     throw { [NotYet]: promise as Promise<unknown> } satisfies EagerError;
   }
 
-  if (extra.status === 'rejected') {
-    throw extra.reason;
+  if (meta.status === 'rejected') {
+    throw meta.reason;
   }
 
-  return extra.value as Awaited<T>; // Fulfilled
+  return meta.value as Awaited<T>; // Fulfilled
 }
 
 function resolveSuspension<T>(
@@ -47,12 +47,19 @@ function resolveSuspension<T>(
   } catch (e) {
     const suspended = (e as EagerError | { [NotYet]?: undefined })[NotYet];
     if (suspended) {
-      return suspended.then((value) => {
-        if (signal.aborted) {
-          return undefined as T;
-        }
-        return resolveSuspension(compute, signal);
-      });
+      return suspended.then(
+        (value) => {
+          setPromiseMeta(suspended, { status: 'fulfilled', value });
+          if (signal.aborted) {
+            return undefined as T;
+          }
+          return resolveSuspension(compute, signal);
+        },
+        (reason) => {
+          setPromiseMeta(suspended, { status: 'rejected', reason });
+          throw reason;
+        },
+      );
     }
     // Rejecting other errors
     return Promise.reject(e);

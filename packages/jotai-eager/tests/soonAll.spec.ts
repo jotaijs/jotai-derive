@@ -14,14 +14,19 @@ describe('soonAll', () => {
 
   it('returns the same elements if all of them are known', async () => {
     const store = createStore();
-    const resolvedAtom = atom(Promise.resolve(2)); // jōtai instruments its Promises with extra metadata
+    const resolvedAtom = atom(Promise.resolve(2));
     const promise = store.get(resolvedAtom);
-    await promise;
 
-    const result = soonAll([1, promise, 3]);
-    expect(result).toEqual([1, 2, 3]);
+    const result1 = soonAll([1, promise, 3]);
+    await expect(result1).resolves.toEqual([1, 2, 3]);
 
-    expectTypeOf(result).toEqualTypeOf<
+    const result2 = soonAll([1, promise, 3]);
+    expect(result2).toEqual([1, 2, 3]);
+
+    expectTypeOf(result1).toEqualTypeOf<
+      Promise<[number, number, number]> | [number, number, number]
+    >();
+    expectTypeOf(result2).toEqualTypeOf<
       Promise<[number, number, number]> | [number, number, number]
     >();
   });

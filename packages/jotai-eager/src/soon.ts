@@ -1,4 +1,4 @@
-import { getPromiseExtra } from './isPromise.js';
+import { getPromiseMeta, setPromiseMeta } from './isPromise.js';
 
 /**
  * Executes `process` with `data` as input synchronously if `data` is known, meaning
@@ -47,24 +47,34 @@ function _soonImpl<TInput, TOutput>(
   data: TInput,
   process: (knownData: NoInfer<Awaited<TInput>>) => TOutput,
 ): TOutput | Promise<Awaited<TOutput>> {
-  const extra = getPromiseExtra<Awaited<TInput>>(data);
+  const meta = getPromiseMeta<Awaited<TInput>>(data);
 
-  if (extra) {
-    if (extra.status === 'fulfilled') {
+  if (meta) {
+    if (meta.status === 'fulfilled') {
       // can process the value earlier
-      return process(extra.value);
+      return process(meta.value);
     }
 
-    if (extra.status === 'rejected') {
+    if (meta.status === 'rejected') {
       // To keep the error handling behavior consistent, lets
       // always return a rejected promise, even if the processing
       // can be done in sync.
-      return Promise.reject(extra.reason);
+      return Promise.reject(meta.reason);
     }
 
-    return (data as Promise<Awaited<TInput>>).then((value) =>
-      process(value),
-    ) as Promise<Awaited<TOutput>>;
+    const promise = data as Promise<Awaited<TInput>>;
+
+    const transformedPromise = promise.then(
+      (value) => {
+        setPromiseMeta(promise, { status: 'fulfilled', value });
+        return process(value) as Awaited<TOutput>;
+      },
+      (reason) => {
+        setPromiseMeta(promise, { status: 'rejected', reason });
+        throw reason;
+      },
+    );
+    return transformedPromise;
   }
 
   try {

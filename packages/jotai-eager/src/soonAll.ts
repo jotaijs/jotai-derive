@@ -1,4 +1,9 @@
-import { getFulfilledValue, isKnown } from './isPromise.js';
+import {
+  getFulfilledValue,
+  isKnown,
+  isPromise,
+  setPromiseMeta,
+} from './isPromise.js';
 
 type PromiseOrValue<T> = Promise<T> | T;
 
@@ -20,5 +25,13 @@ export function soonAll<T extends readonly unknown[]>(values: T): SoonAll<T> {
     return values.map((el) => getFulfilledValue(el)) as unknown as SoonAll<T>;
   }
 
-  return Promise.all(values);
+  return Promise.all(values).then((fulfilledValues) => {
+    fulfilledValues.map((fulfilled, idx) => {
+      const promise = values[idx];
+      if (isPromise(promise)) {
+        setPromiseMeta(promise, { status: 'fulfilled', value: fulfilled });
+      }
+    });
+    return fulfilledValues;
+  });
 }

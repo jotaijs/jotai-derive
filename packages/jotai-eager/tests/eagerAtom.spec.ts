@@ -83,9 +83,7 @@ describe('eagerAtom', () => {
   });
 
   it('computes synchronously if asynchronous dependencies are fulfilled', async () => {
-    const delay = deferred<void>();
     const petsAtom = atom(async () => {
-      await delay.promise; // Simulating a remote API call
       return ['dog', 'cat', 'meerkat', 'parrot', 'mouse'];
     });
     const filterAtom = atom('');
@@ -94,14 +92,10 @@ describe('eagerAtom', () => {
       return get(petsAtom).filter((name) => name.includes(filter));
     });
 
-    const petsPromise = store.get(petsAtom);
-    expect(petsPromise).toBeInstanceOf(Promise);
+    const unfilteredPets = store.get(filteredPetsAtom);
+    expect(unfilteredPets).toBeInstanceOf(Promise);
 
-    delay.resolve();
-    await petsPromise;
-
-    let filteredPets = store.get(filteredPetsAtom);
-    expect(filteredPets).toMatchInlineSnapshot(`
+    await expect(unfilteredPets).resolves.toMatchInlineSnapshot(`
 			[
 			  "dog",
 			  "cat",
@@ -113,8 +107,8 @@ describe('eagerAtom', () => {
 
     store.set(filterAtom, 'at');
 
-    filteredPets = store.get(filteredPetsAtom);
-    expect(filteredPets).toMatchInlineSnapshot(`
+    const atPets = store.get(filteredPetsAtom);
+    expect(atPets).toMatchInlineSnapshot(`
 			[
 			  "cat",
 			  "meerkat",
@@ -172,6 +166,8 @@ describe('eagerAtom', () => {
 				  ""one" computed",
 				  ""two" computed",
 				  ""three" computed",
+				  "suspended",
+				  "suspended",
 				  "suspended",
 				]
 			`);

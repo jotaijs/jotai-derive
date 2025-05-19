@@ -94,34 +94,28 @@ describe('soon (in atoms)', () => {
     expect(numberOfCalculations).toEqual(1);
   });
 
-  it('handles a resolved promise instantly', async () => {
+  it('handles a resolved promise instantly the second time around', async () => {
     const store = createStore();
-
-    const initialCount = deferred<number>();
-    const countAtom = atom<Promise<number> | number>(initialCount.promise);
+    const aAtom = atom<Promise<number> | number>(Promise.resolve(4));
+    const bAtom = atom<number>(2);
 
     let numberOfCalculations = 0;
 
-    const doubledAtom = atom((get) =>
-      pipe(
-        get(countAtom),
-        soon((value) => {
-          numberOfCalculations += 1;
-          return value * 2;
-        }),
-      ),
+    const productAtom = atom((get) =>
+      soon(get(aAtom), (value) => {
+        numberOfCalculations += 1;
+        return value * get(bAtom);
+      }),
     );
 
-    const countPromise = store.get(countAtom);
-    expect(countPromise).toBeInstanceOf(Promise);
+    const first = store.get(productAtom);
+    expect(first).toBeInstanceOf(Promise);
+    await expect(first).resolves.toEqual(8);
 
-    initialCount.resolve(11);
-
-    expect(await countPromise).toEqual(11);
-
-    // First time we are calculating the value of `doubledAtom`
-    expect(store.get(doubledAtom)).toEqual(22); // should just equal a concrete value
-    expect(numberOfCalculations).toEqual(1);
+    // Second time we are calculating the value of `productAtom`
+    store.set(bAtom, 3);
+    expect(store.get(productAtom)).toEqual(12); // should just equal a concrete value
+    expect(numberOfCalculations).toEqual(2);
   });
 
   it('recalculates only when dependencies change', async () => {
