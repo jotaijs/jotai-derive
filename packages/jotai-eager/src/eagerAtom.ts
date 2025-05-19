@@ -1,5 +1,5 @@
 import { atom } from 'jotai/vanilla';
-import type { ExtractAtomValue, Atom } from 'jotai/vanilla';
+import type { Atom, ExtractAtomValue } from 'jotai/vanilla';
 import { getPromiseExtra } from './isPromise.js';
 
 type AwaitedAtoms<T extends readonly Atom<unknown>[]> = {
