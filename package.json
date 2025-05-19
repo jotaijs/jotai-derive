@@ -50,7 +50,7 @@
 		"@biomejs/biome": "1.9.4",
 		"@types/node": "^22.15.2",
 		"happy-dom": "^17.4.4",
-		"jotai": "2.8.0",
+		"jotai": "2.10.0",
 		"remeda": "^2.21.3",
 		"typescript": "^5.8.3",
 		"vite": "^6.3.3",
