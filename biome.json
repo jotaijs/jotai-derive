@@ -8,7 +8,8 @@
 	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "single"
+			"quoteStyle": "single",
+			"indentStyle": "space"
 		}
 	},
 	"linter": {

@@ -3,64 +3,64 @@ import type { Atom, ExtractAtomValue } from 'jotai/vanilla';
 import { getPromiseExtra } from './isPromise.js';
 
 type AwaitedAtoms<T extends readonly Atom<unknown>[]> = {
-	[K in keyof T]: Awaited<ExtractAtomValue<T[K]>>;
+  [K in keyof T]: Awaited<ExtractAtomValue<T[K]>>;
 };
 
 type EagerGetter = (<Value>(atom: Atom<Value>) => Awaited<Value>) & {
-	all: <T extends readonly Atom<unknown>[] | []>(atoms: T) => AwaitedAtoms<T>;
+  all: <T extends readonly Atom<unknown>[] | []>(atoms: T) => AwaitedAtoms<T>;
 };
 type Read<Value> = (get: EagerGetter) => Value;
 
 const NotYet = Symbol(
-	'(jotai-eager) Not all dependencies were fulfilled. Are you a dev? Call `isEagerError(e)` to detect this thrown value and rethrow it, as its handled by the library.',
+  '(jotai-eager) Not all dependencies were fulfilled. Are you a dev? Call `isEagerError(e)` to detect this thrown value and rethrow it, as its handled by the library.',
 );
 
 interface EagerError {
-	[NotYet]: Promise<unknown>;
+  [NotYet]: Promise<unknown>;
 }
 
 function unwrapPromise<T>(promise: T): Awaited<T> {
-	const extra = getPromiseExtra(promise);
+  const extra = getPromiseExtra(promise);
 
-	if (!extra) {
-		// Not a promise
-		return promise as Awaited<T>;
-	}
+  if (!extra) {
+    // Not a promise
+    return promise as Awaited<T>;
+  }
 
-	if (extra.status === 'pending') {
-		throw { [NotYet]: promise as Promise<unknown> } satisfies EagerError;
-	}
+  if (extra.status === 'pending') {
+    throw { [NotYet]: promise as Promise<unknown> } satisfies EagerError;
+  }
 
-	if (extra.status === 'rejected') {
-		throw extra.reason;
-	}
+  if (extra.status === 'rejected') {
+    throw extra.reason;
+  }
 
-	return extra.value as Awaited<T>; // Fulfilled
+  return extra.value as Awaited<T>; // Fulfilled
 }
 
 function resolveSuspension<T>(
-	compute: () => T,
-	signal: AbortSignal,
+  compute: () => T,
+  signal: AbortSignal,
 ): T | Promise<T> {
-	try {
-		return compute();
-	} catch (e) {
-		const suspended = (e as EagerError | { [NotYet]?: undefined })[NotYet];
-		if (suspended) {
-			return suspended.then((value) => {
-				if (signal.aborted) {
-					return undefined as T;
-				}
-				return resolveSuspension(compute, signal);
-			});
-		}
-		// Rejecting other errors
-		return Promise.reject(e);
-	}
+  try {
+    return compute();
+  } catch (e) {
+    const suspended = (e as EagerError | { [NotYet]?: undefined })[NotYet];
+    if (suspended) {
+      return suspended.then((value) => {
+        if (signal.aborted) {
+          return undefined as T;
+        }
+        return resolveSuspension(compute, signal);
+      });
+    }
+    // Rejecting other errors
+    return Promise.reject(e);
+  }
 }
 
 type AsyncReadFunctionError =
-	'ERROR: The `read` function of eager atoms cannot be asynchronous, or return a Promise.';
+  'ERROR: The `read` function of eager atoms cannot be asynchronous, or return a Promise.';
 
 /**
  * A drop-in replacement for vanilla atoms wih custom async read functions, that
@@ -74,25 +74,25 @@ type AsyncReadFunctionError =
  * @returns An eager atom
  */
 export function eagerAtom<Value>(
-	...args: Value extends PromiseLike<unknown>
-		? [AsyncReadFunctionError]
-		: [read: Read<Value>]
+  ...args: Value extends PromiseLike<unknown>
+    ? [AsyncReadFunctionError]
+    : [read: Read<Value>]
 ): Atom<Promise<Value> | Value> {
-	const [read] = args as [Read<Value>];
+  const [read] = args as [Read<Value>];
 
-	return atom((get, { signal }) => {
-		const eagerGet = (<Value>(atomToGet: Atom<Value>): Awaited<Value> =>
-			unwrapPromise(get(atomToGet))) as EagerGetter;
+  return atom((get, { signal }) => {
+    const eagerGet = (<Value>(atomToGet: Atom<Value>): Awaited<Value> =>
+      unwrapPromise(get(atomToGet))) as EagerGetter;
 
-		eagerGet.all = <T extends readonly Atom<unknown>[]>(atoms: T) =>
-			atoms
-				// Jump-starting every asynchronous atom.
-				.map((a) => get(a))
-				// Unwrapping them one by one, sequentially.
-				.map((v) => unwrapPromise(v)) as AwaitedAtoms<T>;
+    eagerGet.all = <T extends readonly Atom<unknown>[]>(atoms: T) =>
+      atoms
+        // Jump-starting every asynchronous atom.
+        .map((a) => get(a))
+        // Unwrapping them one by one, sequentially.
+        .map((v) => unwrapPromise(v)) as AwaitedAtoms<T>;
 
-		return resolveSuspension(() => read(eagerGet), signal);
-	});
+    return resolveSuspension(() => read(eagerGet), signal);
+  });
 }
 
 /**
@@ -101,5 +101,5 @@ export function eagerAtom<Value>(
  * @returns True if `error` is a suspension trigger originating from `jotai-eager`.
  */
 export function isEagerError(error: unknown): boolean {
-	return !!(error as EagerError)?.[NotYet];
+  return !!(error as EagerError)?.[NotYet];
 }

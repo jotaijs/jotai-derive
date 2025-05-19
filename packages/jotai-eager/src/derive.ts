@@ -6,15 +6,15 @@ import { soonAll } from './soonAll.js';
 type PromiseOrValue<T> = T | Promise<T>;
 
 type ExtractAtomsValues<
-	TAtoms extends readonly [Atom<unknown>, ...Atom<unknown>[]],
+  TAtoms extends readonly [Atom<unknown>, ...Atom<unknown>[]],
 > = {
-	[Index in keyof TAtoms]: ExtractAtomValue<TAtoms[Index]>;
+  [Index in keyof TAtoms]: ExtractAtomValue<TAtoms[Index]>;
 };
 
 type AwaitAtomsValues<
-	TTuple extends readonly [Atom<unknown>, ...Atom<unknown>[]],
+  TTuple extends readonly [Atom<unknown>, ...Atom<unknown>[]],
 > = {
-	[Index in keyof TTuple]: Awaited<ExtractAtomValue<TTuple[Index]>>;
+  [Index in keyof TTuple]: Awaited<ExtractAtomValue<TTuple[Index]>>;
 };
 
 /**
@@ -25,22 +25,22 @@ type AwaitAtomsValues<
  * @deprecated In favor of the eagerAtom() API.
  */
 export function derive<
-	TDeps extends readonly [Atom<unknown>, ...Atom<unknown>[]],
-	TValue,
+  TDeps extends readonly [Atom<unknown>, ...Atom<unknown>[]],
+  TValue,
 >(
-	deps: TDeps,
-	op: (...depValues: AwaitAtomsValues<TDeps>) => TValue,
+  deps: TDeps,
+  op: (...depValues: AwaitAtomsValues<TDeps>) => TValue,
 ): Atom<TValue | Promise<Awaited<TValue>>> {
-	return atom((get) => {
-		try {
-			return soon(
-				soonAll(deps.map(get) as ExtractAtomsValues<TDeps>) as PromiseOrValue<
-					AwaitAtomsValues<TDeps>
-				>,
-				(values) => op(...values),
-			) as TValue | Promise<Awaited<TValue>>;
-		} catch (err) {
-			return Promise.reject(err);
-		}
-	});
+  return atom((get) => {
+    try {
+      return soon(
+        soonAll(deps.map(get) as ExtractAtomsValues<TDeps>) as PromiseOrValue<
+          AwaitAtomsValues<TDeps>
+        >,
+        (values) => op(...values),
+      ) as TValue | Promise<Awaited<TValue>>;
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  });
 }
