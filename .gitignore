@@ -1,5 +1,5 @@
 node_modules
-/dist
+packages/*/dist
 
 # MacOS
 .DS_Store

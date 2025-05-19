@@ -6,9 +6,18 @@
 	"files": {
 		"ignore": ["dist/**"]
 	},
+	"json": {
+		"formatter": {
+			"enabled": false
+		},
+		"linter": {
+			"enabled": false
+		}
+	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "single"
+			"quoteStyle": "single",
+			"indentStyle": "space"
 		}
 	},
 	"linter": {

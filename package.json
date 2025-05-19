@@ -1,59 +1,19 @@
 {
-	"name": "jotai-eager",
-	"version": "0.2.0",
-	"type": "module",
-	"description": "Jōtai utilities that help with asynchronous atoms",
-	"packageManager": "pnpm@8.15.0",
-	"author": "Iwo Plaza",
-	"license": "MIT",
-	"source": "./src/index.ts",
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		"./package.json": "./package.json",
-		".": {
-			"require": {
-				"types": "./dist/cjs/index.d.ts",
-				"default": "./dist/cjs/index.js"
-			},
-			"default": {
-				"types": "./dist/index.d.ts",
-				"default": "./dist/index.js"
-			}
-		}
-	},
-	"sideEffects": false,
-	"files": ["src", "dist"],
+	"name": "jotai-eager-monorepo",
+	"private": true,
+	"packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977",
 	"scripts": {
-		"compile": "rm -rf dist && pnpm run '/^compile:.*/'",
-		"compile:esm": "tsc -p tsconfig.esm.json",
-		"compile:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
 		"test": "pnpm run '/^test:.*/'",
 		"test:biome": "biome check --write",
-		"test:types": "tsc -p . --noEmit",
-		"test:spec": "vitest run",
-		"prepublishOnly": "pnpm compile"
-	},
-	"keywords": [
-		"jotai",
-		"react",
-		"async",
-		"asynchronous",
-		"promise",
-		"derive",
-		"derived"
-	],
-	"peerDependencies": {
-		"jotai": ">=2.0.0"
+		"test:types": "pnpm run -r --parallel test:types",
+		"test:spec": "vitest run"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@types/node": "^22.15.2",
+		"@types/node": "catalog:",
 		"happy-dom": "^17.4.4",
-		"jotai": "2.8.0",
-		"remeda": "^2.21.3",
-		"typescript": "^5.8.3",
-		"vite": "^6.3.3",
-		"vitest": "^3.1.2"
+		"typescript": "catalog:",
+		"unbuild": "^3.5.0",
+		"vitest": "catalog:"
 	}
 }

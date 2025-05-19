@@ -5,14 +5,12 @@
 		"esModuleInterop": true,
 		"module": "nodenext",
 		"skipLibCheck": true,
-		"allowJs": true,
+		"declaration": true,
+		"noImplicitAny": true,
+		"emitDeclarationOnly": true,
+		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,
 		"noUncheckedIndexedAccess": true,
-		"exactOptionalPropertyTypes": true,
-		"baseUrl": ".",
-		"paths": {
-			"jotai-eager": ["./src/index.js"]
-		}
-	},
-	"exclude": ["dist", "examples"]
+		"exactOptionalPropertyTypes": true
+	}
 }

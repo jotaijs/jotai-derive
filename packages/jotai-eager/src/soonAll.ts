@@ -3,7 +3,7 @@ import { getFulfilledValue, isKnown } from './isPromise.js';
 type PromiseOrValue<T> = Promise<T> | T;
 
 type SoonAll<T extends readonly unknown[]> = PromiseOrValue<{
-	[Index in keyof T]: Awaited<T[Index]>;
+  [Index in keyof T]: Awaited<T[Index]>;
 }>;
 
 /**
@@ -12,13 +12,13 @@ type SoonAll<T extends readonly unknown[]> = PromiseOrValue<{
  * promise to that array.
  */
 export function soonAll<T extends readonly unknown[] | []>(
-	values: T,
+  values: T,
 ): SoonAll<T>;
 export function soonAll<T extends readonly unknown[]>(values: T): SoonAll<T>;
 export function soonAll<T extends readonly unknown[]>(values: T): SoonAll<T> {
-	if (values.every(isKnown)) {
-		return values.map((el) => getFulfilledValue(el)) as unknown as SoonAll<T>;
-	}
+  if (values.every(isKnown)) {
+    return values.map((el) => getFulfilledValue(el)) as unknown as SoonAll<T>;
+  }
 
-	return Promise.all(values);
+  return Promise.all(values);
 }
