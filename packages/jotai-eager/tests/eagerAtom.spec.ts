@@ -173,4 +173,21 @@ describe('eagerAtom', () => {
 			`);
     });
   });
+
+  it('computes a chain of eager atoms synchronously on a sync dependency change', async () => {
+    const labelAtom = atom(Promise.resolve('John'));
+    const counterAtom = atom(0);
+    const prefixedAtom = eagerAtom(
+      (get) => `${get(labelAtom)}:${get(counterAtom)}`,
+    );
+    const fixedAtom = eagerAtom(
+      (get) => `${get(prefixedAtom)}:${get(labelAtom)}`,
+    );
+
+    await expect(store.get(prefixedAtom)).resolves.toMatchInlineSnapshot(
+      `"John:0"`,
+    );
+    store.set(counterAtom, 1);
+    expect(store.get(fixedAtom)).toMatchInlineSnapshot(`"John:1:John"`);
+  });
 });
