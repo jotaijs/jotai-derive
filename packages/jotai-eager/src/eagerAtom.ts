@@ -56,6 +56,9 @@ function resolveSuspension<T>(
           return resolveSuspension(compute, signal);
         },
         (reason) => {
+          if (signal.aborted) {
+            return undefined as T;
+          }
           setPromiseMeta(suspended, { status: 'rejected', reason });
           throw reason;
         },
