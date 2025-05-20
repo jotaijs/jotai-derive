@@ -1,6 +1,6 @@
 {
 	"name": "jotai-eager",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "Jōtai utilities that help with asynchronous atoms",
 	"author": "Iwo Plaza",
@@ -10,8 +10,6 @@
 		".": "./src/index.ts"
 	},
 	"publishConfig": {
-		"directory": "dist",
-		"linkDirectory": false,
 		"main": "./dist/index.mjs",
 		"types": "./dist/index.d.mts",
 		"exports": {
@@ -29,10 +27,11 @@
 		}
 	},
 	"sideEffects": false,
+	"files": ["README.md", "dist", "package.json"],
 	"scripts": {
 		"build": "unbuild",
 		"test:types": "tsc -p . --noEmit",
-		"prepublishOnly": "pnpm build"
+		"prepublishOnly": "automd && pnpm build"
 	},
 	"keywords": [
 		"jotai",
