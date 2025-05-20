@@ -83,9 +83,7 @@ describe('eagerAtom', () => {
   });
 
   it('computes synchronously if asynchronous dependencies are fulfilled', async () => {
-    const delay = deferred<void>();
     const petsAtom = atom(async () => {
-      await delay.promise; // Simulating a remote API call
       return ['dog', 'cat', 'meerkat', 'parrot', 'mouse'];
     });
     const filterAtom = atom('');
@@ -94,14 +92,10 @@ describe('eagerAtom', () => {
       return get(petsAtom).filter((name) => name.includes(filter));
     });
 
-    const petsPromise = store.get(petsAtom);
-    expect(petsPromise).toBeInstanceOf(Promise);
+    const unfilteredPets = store.get(filteredPetsAtom);
+    expect(unfilteredPets).toBeInstanceOf(Promise);
 
-    delay.resolve();
-    await petsPromise;
-
-    let filteredPets = store.get(filteredPetsAtom);
-    expect(filteredPets).toMatchInlineSnapshot(`
+    await expect(unfilteredPets).resolves.toMatchInlineSnapshot(`
 			[
 			  "dog",
 			  "cat",
@@ -113,8 +107,8 @@ describe('eagerAtom', () => {
 
     store.set(filterAtom, 'at');
 
-    filteredPets = store.get(filteredPetsAtom);
-    expect(filteredPets).toMatchInlineSnapshot(`
+    const atPets = store.get(filteredPetsAtom);
+    expect(atPets).toMatchInlineSnapshot(`
 			[
 			  "cat",
 			  "meerkat",
@@ -173,8 +167,27 @@ describe('eagerAtom', () => {
 				  ""two" computed",
 				  ""three" computed",
 				  "suspended",
+				  "suspended",
+				  "suspended",
 				]
 			`);
     });
+  });
+
+  it('computes a chain of eager atoms synchronously on a sync dependency change', async () => {
+    const labelAtom = atom(Promise.resolve('John'));
+    const counterAtom = atom(0);
+    const prefixedAtom = eagerAtom(
+      (get) => `${get(labelAtom)}:${get(counterAtom)}`,
+    );
+    const fixedAtom = eagerAtom(
+      (get) => `${get(prefixedAtom)}:${get(labelAtom)}`,
+    );
+
+    await expect(store.get(prefixedAtom)).resolves.toMatchInlineSnapshot(
+      `"John:0"`,
+    );
+    store.set(counterAtom, 1);
+    expect(store.get(fixedAtom)).toMatchInlineSnapshot(`"John:1:John"`);
   });
 });

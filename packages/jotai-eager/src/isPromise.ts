@@ -1,47 +1,69 @@
-/**
- * `jōtai 👻` instruments its promises with extra metadata,
- * which we can occasionally use to compute something *sooner*,
- * instead of postponing the calculation onto the next tick.
- */
-export type ExtraPromise<T> = Promise<T> & {
-  status?: 'pending' | 'fulfilled' | 'rejected';
-  value?: T;
-  reason?: unknown;
-};
-
-type PromiseExtra<T> =
-  | {
-      status: 'pending';
-    }
-  | {
-      status: 'fulfilled';
-      value: T;
-    }
-  | {
-      status: 'rejected';
-      reason: unknown;
-    };
-
-export function isPromise<T, S>(
-  value: ExtraPromise<T> | S,
-): value is ExtraPromise<T> {
-  return value && typeof value === 'object' && 'then' in value;
+interface PromiseMetaPending {
+  status: 'pending';
 }
 
-export function getPromiseExtra<T>(
+interface PromiseMetaFulfilled<T> {
+  status: 'fulfilled';
+  value: T;
+}
+
+interface PromiseMetaRejected {
+  status: 'rejected';
+  reason: unknown;
+}
+
+type PromiseMeta<T> =
+  | PromiseMetaPending
+  | PromiseMetaFulfilled<T>
+  | PromiseMetaRejected;
+
+const PENDING: PromiseMetaPending = { status: 'pending' } as const;
+const promiseMetaCache = new WeakMap<object, PromiseMeta<unknown>>();
+
+export function isPromise<T>(value: Promise<T> | unknown): value is Promise<T> {
+  return !!(value as Promise<T>)?.then;
+}
+
+export function getPromiseMeta<T>(
   promise: unknown | Promise<T>,
-): PromiseExtra<T> | undefined {
+): PromiseMeta<T> | undefined {
   if (!isPromise(promise)) {
     return undefined;
   }
 
-  if (promise.status === 'fulfilled') {
-    return { status: 'fulfilled', value: promise.value as Awaited<T> };
+  return (promiseMetaCache.get(promise as object) ?? PENDING) as
+    | PromiseMeta<T>
+    | undefined;
+}
+
+export function setPromiseMeta<T>(
+  promise: Promise<T>,
+  meta: PromiseMeta<T>,
+): void {
+  promiseMetaCache.set(promise, meta);
+}
+
+/**
+ * If it's a non promise, or a fulfilled promise.
+ */
+export function isKnown<T>(value: Promise<T> | unknown): boolean {
+  const meta = getPromiseMeta(value);
+
+  if (meta) {
+    return meta.status === 'fulfilled'; // only if fulfilled
   }
 
-  if (promise.status === 'rejected') {
-    return { status: 'rejected', reason: promise.reason };
-  }
+  return true; // not a promise, we know the value.
+}
 
-  return { status: 'pending' };
+/**
+ * NOTE: If `promiseOrValue` is a Promise, but is not fulfilled, then it's undefined behavior.
+ * @returns `promiseOrValue` if it's not a Promise, the fulfilled value if it's a Promise.
+ */
+export function getFulfilledValue<T>(promiseOrValue: Promise<T> | unknown): T {
+  const meta = getPromiseMeta(promiseOrValue);
+  if (meta) {
+    return (meta as PromiseMetaFulfilled<T>).value;
+  }
+  return promiseOrValue as T;
 }
