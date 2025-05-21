@@ -3,7 +3,15 @@
 	"version": "0.2.1",
 	"type": "module",
 	"description": "Jōtai utilities that help with asynchronous atoms",
-	"author": "Iwo Plaza",
+	"author": "Iwo Plaza <iwoplaza@gmail.com> (https://iwoplaza.dev)",
+	"repository": {
+    "type": "git",
+    "url": "git+https://github.com/jotaijs/jotai-eager.git"
+  },
+	"bugs": {
+    "url": "https://github.com/jotaijs/jotai-eager/issues",
+		"email": "iwoplaza@gmail.com"
+  },
 	"license": "MIT",
 	"exports": {
 		"./package.json": "./package.json",
