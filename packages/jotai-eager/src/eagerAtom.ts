@@ -1,14 +1,37 @@
 import { atom } from 'jotai/vanilla';
-import type { Atom, ExtractAtomValue } from 'jotai/vanilla';
+import type { Atom } from 'jotai/vanilla';
 import { getPromiseMeta, setPromiseMeta } from './isPromise.js';
 
-type AwaitedAtoms<T extends readonly Atom<unknown>[]> = {
-  [K in keyof T]: Awaited<ExtractAtomValue<T[K]>>;
+export type AwaitedAll<T extends readonly unknown[]> = {
+  [K in keyof T]: Awaited<T[K] extends Atom<infer Value> ? Value : T[K]>;
 };
 
-type EagerGetter = (<Value>(atom: Atom<Value>) => Awaited<Value>) & {
-  all: <T extends readonly Atom<unknown>[] | []>(atoms: T) => AwaitedAtoms<T>;
-};
+interface EagerGetter {
+  /**
+   * Retrieves the atom's fulfilled value.
+   * If the value is not yet available, it interrupts the execution
+   * of the eager atom until it's available.
+   */
+  <Value>(atom: Atom<Value>): Awaited<Value>;
+  /**
+   * Retrieves the Promise's fulfilled value.
+   * If the value is not yet available, it interrupts the execution
+   * of the eager atom until it's available.
+   */
+  await<T>(promiseOrValue: T): Awaited<T>;
+  /**
+   * Retrieves the fulfilled value of all passed in Promises.
+   * If the values are not yet available, it interrupts the execution
+   * of the eager atom until they're available.
+   */
+  awaitAll<T extends readonly unknown[]>(args: T): AwaitedAll<T>;
+  /**
+   * Retrieves the fulfilled value of all passed in atoms.
+   * If the values are not yet available, it interrupts the execution
+   * of the eager atom until they're available.
+   */
+  all<T extends readonly Atom<unknown>[]>(atoms: T): AwaitedAll<T>;
+}
 type Read<Value> = (get: EagerGetter) => Value;
 
 const NotYet = Symbol(
@@ -99,7 +122,11 @@ export function eagerAtom<Value>(
         // Jump-starting every asynchronous atom.
         .map((a) => get(a))
         // Unwrapping them one by one, sequentially.
-        .map((v) => unwrapPromise(v)) as AwaitedAtoms<T>;
+        .map((v) => unwrapPromise(v)) as AwaitedAll<T>;
+
+    eagerGet.await = <T>(promiseOrValue: T) => unwrapPromise(promiseOrValue);
+    eagerGet.awaitAll = <T extends readonly unknown[]>(values: T) =>
+      values.map((v) => unwrapPromise(v)) as AwaitedAll<T>;
 
     return resolveSuspension(() => read(eagerGet), signal);
   });

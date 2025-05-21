@@ -3,6 +3,25 @@ import { eagerAtom, isEagerError } from 'jotai-eager';
 import { atom, createStore } from 'jotai/vanilla';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 import { deferred } from './mockUtils.js';
+import type { AwaitedAll } from '../src/eagerAtom.ts';
+
+describe('AwaitedAll<T>', () => {
+  it('resolves a tuple of atoms to a tuple of their awaited values', () => {
+    expectTypeOf<AwaitedAll<[Atom<1>, Atom<Promise<2>>]>>().toEqualTypeOf<
+      [1, 2]
+    >();
+    expectTypeOf<
+      AwaitedAll<[Atom<Promise<1>>, Atom<2>, Atom<3>]>
+    >().toEqualTypeOf<[1, 2, 3]>();
+    expectTypeOf<AwaitedAll<(Atom<Promise<1>> | Atom<2>)[]>>().toEqualTypeOf<
+      (1 | 2)[]
+    >();
+  });
+
+  it('resolves a tuple of Promises to their awaited values', () => {
+    expectTypeOf<AwaitedAll<[1, Promise<2>]>>().toEqualTypeOf<[1, 2]>();
+  });
+});
 
 describe('eagerAtom', () => {
   let store: ReturnType<typeof createStore>;
