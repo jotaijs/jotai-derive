@@ -10,7 +10,7 @@ import { getPromiseMeta, setPromiseMeta } from './isPromise.js';
  */
 export function soon<TInput, TOutput>(
   data: TInput,
-  process: (knownData: NoInfer<Awaited<TInput>>) => TOutput,
+  process: (knownData: Awaited<TInput>) => TOutput,
 ): TOutput | Promise<Awaited<TOutput>>;
 
 /**
@@ -27,7 +27,7 @@ export function soon<TInput, TOutput>(
 
 export function soon<TInput, TOutput>(
   first: TInput | ((knownData: NoInfer<Awaited<TInput>>) => TOutput),
-  second?: (knownData: NoInfer<Awaited<TInput>>) => TOutput,
+  second?: (knownData: Awaited<TInput>) => TOutput,
 ): unknown {
   if (second) {
     // data-first

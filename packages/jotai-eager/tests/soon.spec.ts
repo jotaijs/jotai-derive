@@ -1,6 +1,5 @@
 import { soon } from 'jotai-eager';
 import { atom, createStore } from 'jotai/vanilla';
-import { pipe } from 'remeda';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import { deferred } from './mockUtils.js';
@@ -23,8 +22,8 @@ describe('soon', () => {
   it('processes sync and async data as soon as possible', async () => {
     const multiply = ([a, b]: readonly [number, number]) => a * b;
 
-    const syncResult = pipe([12, 5] as const, soon(multiply));
-    const asyncResult = pipe(Promise.resolve([10, 8] as const), soon(multiply));
+    const syncResult = soon([12, 5] as const, multiply);
+    const asyncResult = soon(Promise.resolve([10, 8] as const), multiply);
 
     expect(syncResult).toEqual(60);
     expect(asyncResult).toBeInstanceOf(Promise);
@@ -43,9 +42,9 @@ describe('soon', () => {
     const double = (value: number) => value * 2;
     const doubleAsync = (value: number) => Promise.resolve(value * 2);
 
-    const asyncEnd = pipe(3, soon(double), soon(doubleAsync));
-    const asyncMiddle = pipe(3, soon(doubleAsync), soon(double));
-    const asyncStart = pipe(Promise.resolve(3), soon(double), soon(double));
+    const asyncEnd = soon(soon(3, double), doubleAsync);
+    const asyncMiddle = soon(soon(3, doubleAsync), double);
+    const asyncStart = soon(soon(Promise.resolve(3), double), double);
 
     await expect(asyncEnd).resolves.toEqual(12);
     await expect(asyncMiddle).resolves.toEqual(12);
@@ -58,7 +57,7 @@ describe('soon', () => {
       throw { error: 'test' };
     };
 
-    const result = pipe(123, soon(throwError));
+    const result = soon(123, throwError);
 
     await expect(result).rejects.toEqual({ error: 'test' });
   });
@@ -74,13 +73,10 @@ describe('soon (in atoms)', () => {
     let numberOfCalculations = 0;
 
     const doubledAtom = atom((get) =>
-      pipe(
-        get(countAtom),
-        soon((value) => {
-          numberOfCalculations += 1;
-          return value * 2;
-        }),
-      ),
+      soon(get(countAtom), (value) => {
+        numberOfCalculations += 1;
+        return value * 2;
+      }),
     );
 
     // Interacting just with `doubledAtom`, never with `countAtom` directly.
@@ -127,20 +123,14 @@ describe('soon (in atoms)', () => {
     let numberOfCalculations = 0;
 
     const flooredAtom = atom((get) =>
-      pipe(
-        get(baseAtom),
-        soon((value) => Math.floor(value)),
-      ),
+      soon(get(baseAtom), (value) => Math.floor(value)),
     );
 
     const messageAtom = atom((get) =>
-      pipe(
-        get(flooredAtom),
-        soon((value) => {
-          numberOfCalculations += 1;
-          return `around ${value}`;
-        }),
-      ),
+      soon(get(flooredAtom), (value) => {
+        numberOfCalculations += 1;
+        return `around ${value}`;
+      }),
     );
 
     const messagePromise = store.get(messageAtom);
