@@ -55,9 +55,8 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "jotai": "2.8.0",
+    "jotai": "2.12.4",
     "jotai-eager": "*",
-    "remeda": "^2.21.3",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

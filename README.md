@@ -71,6 +71,20 @@ const myMessages = eagerAtom((get) => {
 }); // => Atom<Message[] | Promise<Message[]>>
 ```
 
+### Awaiting a Promise that is not another atom's value
+
+We can use the `get.await` API to await regular Promises inside `eagerAtom` definitions, granted we make sure that the Promise
+we're passing is consistent across invocations of the atom's read function.
+
+```ts
+const statusAtom = eagerAtom((get) => {
+  const statusPromise = get(currentInvoiceAtom).getStatus(); // => Promise<InvoiceStatus>
+  const status = get.await(statusPromise);
+  //    ^? InvoiceStatus
+  return status;
+});
+```
+
 ## Caveats
 
 ### Using `try` & `catch` inside eager atoms
@@ -93,6 +107,26 @@ const fooAtom = eagerAtom((get) => {
   }
 });
 ```
+
+### Awaiting a Promise that is created inside the atom
+
+Since the read function is "retried" after a Promise we await is fulfilled, the mechanism expects
+the same promise to be passed into `get.await` the second time around. Since we're creating the
+Promise inside of the read function itself, that will never be the case, and we'll be stuck in an infinite loop.
+
+```ts
+const sleep = (ms: number) =>
+  new Promise((r) => setTimeout(r, ms));
+
+// This atom will be stuck in an infinite loop :(
+const deferredNumberAtom = eagerAtom((get) => {
+  get.await(sleep(1000)); // Waiting for a second...
+  return 123;
+});
+```
+
+For this particular use-case, since we're always deferring, using an `eagerAtom` over
+a vanilla async atom is unnecessary. [See Advanced Usage for more complex patterns](#advanced-usage).
 
 ### Make note of the dual nature
 
