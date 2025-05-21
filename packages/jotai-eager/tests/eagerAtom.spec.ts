@@ -209,4 +209,22 @@ describe('eagerAtom', () => {
     store.set(counterAtom, 1);
     expect(store.get(fixedAtom)).toMatchInlineSnapshot(`"John:1:John"`);
   });
+
+  describe('get.await', () => {
+    it('awaits a regular Promise', () => {
+      const statusPromise = Promise.resolve<'success' | 'failure'>('success');
+      const invoiceAtom = atom({
+        getStatus() {
+          return statusPromise;
+        },
+      });
+
+      const statusAtom = eagerAtom((get) => {
+        const invoice = get(invoiceAtom);
+        return get.await(invoice.getStatus());
+      });
+
+      expect(store.get(statusAtom)).resolves.toEqual('success');
+    });
+  });
 });

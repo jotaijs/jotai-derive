@@ -107,7 +107,8 @@ type AsyncReadFunctionError =
  * @returns An eager atom
  */
 export function eagerAtom<Value>(
-  ...args: Value extends PromiseLike<unknown>
+  // NOTE: Wrapping in [] to avoid spreading the operation over union elements
+  ...args: [Value] extends [PromiseLike<unknown>]
     ? [AsyncReadFunctionError]
     : [read: Read<Value>]
 ): Atom<Promise<Value> | Value> {
