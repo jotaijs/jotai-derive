@@ -1,6 +1,6 @@
 {
   "name": "jotai-eager",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Jōtai utilities that help with asynchronous atoms",
   "author": "Iwo Plaza <iwoplaza@gmail.com> (https://iwoplaza.dev)",
