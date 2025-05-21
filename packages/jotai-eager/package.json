@@ -1,65 +1,65 @@
 {
-	"name": "jotai-eager",
-	"version": "0.2.1",
-	"type": "module",
-	"description": "Jōtai utilities that help with asynchronous atoms",
-	"author": "Iwo Plaza <iwoplaza@gmail.com> (https://iwoplaza.dev)",
-	"repository": {
+  "name": "jotai-eager",
+  "version": "0.2.1",
+  "type": "module",
+  "description": "Jōtai utilities that help with asynchronous atoms",
+  "author": "Iwo Plaza <iwoplaza@gmail.com> (https://iwoplaza.dev)",
+  "repository": {
     "type": "git",
     "url": "git+https://github.com/jotaijs/jotai-eager.git"
   },
-	"bugs": {
+  "bugs": {
     "url": "https://github.com/jotaijs/jotai-eager/issues",
-		"email": "iwoplaza@gmail.com"
+    "email": "iwoplaza@gmail.com"
   },
-	"license": "MIT",
-	"exports": {
-		"./package.json": "./package.json",
-		".": "./src/index.ts"
-	},
-	"publishConfig": {
-		"main": "./dist/index.mjs",
-		"types": "./dist/index.d.mts",
-		"exports": {
-			"./package.json": "./package.json",
-			".": {
-				"require": {
-					"types": "./dist/index.d.cts",
-					"default": "./dist/index.cjs"
-				},
-				"default": {
-					"types": "./dist/index.d.mts",
-					"default": "./dist/index.mjs"
-				}
-			}
-		}
-	},
-	"sideEffects": false,
-	"files": ["README.md", "dist", "package.json"],
-	"scripts": {
-		"build": "unbuild",
-		"test:types": "tsc -p . --noEmit",
-		"prepublishOnly": "automd && pnpm build"
-	},
-	"keywords": [
-		"jotai",
-		"react",
-		"async",
-		"asynchronous",
-		"promise",
-		"derive",
-		"derived"
-	],
-	"peerDependencies": {
-		"jotai": ">=2.0.0"
-	},
-	"devDependencies": {
-		"@types/node": "catalog:",
-		"jotai": "2.8.0",
-		"jotai-eager": "*",
-		"remeda": "^2.21.3",
-		"typescript": "catalog:",
-		"vite": "catalog:",
-		"vitest": "catalog:"
-	}
+  "license": "MIT",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+      "./package.json": "./package.json",
+      ".": {
+        "require": {
+          "types": "./dist/index.d.cts",
+          "default": "./dist/index.cjs"
+        },
+        "default": {
+          "types": "./dist/index.d.mts",
+          "default": "./dist/index.mjs"
+        }
+      }
+    }
+  },
+  "sideEffects": false,
+  "files": ["README.md", "dist", "package.json"],
+  "scripts": {
+    "build": "unbuild",
+    "test:types": "tsc -p . --noEmit",
+    "prepublishOnly": "automd && pnpm build"
+  },
+  "keywords": [
+    "jotai",
+    "react",
+    "async",
+    "asynchronous",
+    "promise",
+    "derive",
+    "derived"
+  ],
+  "peerDependencies": {
+    "jotai": ">=2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "jotai": "2.8.0",
+    "jotai-eager": "*",
+    "remeda": "^2.21.3",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
 }

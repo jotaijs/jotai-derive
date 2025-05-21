@@ -1,16 +1,16 @@
 {
-	"compilerOptions": {
-		"strict": true,
-		"target": "es2018",
-		"esModuleInterop": true,
-		"module": "nodenext",
-		"skipLibCheck": true,
-		"declaration": true,
-		"noImplicitAny": true,
-		"emitDeclarationOnly": true,
-		"allowImportingTsExtensions": true,
-		"verbatimModuleSyntax": true,
-		"noUncheckedIndexedAccess": true,
-		"exactOptionalPropertyTypes": true
-	}
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2018",
+    "esModuleInterop": true,
+    "module": "nodenext",
+    "skipLibCheck": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  }
 }
