@@ -30,6 +30,21 @@ describe('eagerAtom', () => {
     store = createStore();
   });
 
+  it('can be writable', () => {
+    const countAtom = atom(1);
+    const doubledAtom = eagerAtom(
+      (get) => get(countAtom) * 2,
+      (_get, set, count: number) => {
+        set(countAtom, count / 2);
+      },
+    );
+
+    expect(store.get(doubledAtom)).toEqual(2);
+    store.set(doubledAtom, 3);
+    expect(store.get(doubledAtom)).toEqual(3);
+    expect(store.get(countAtom)).toEqual(1.5);
+  });
+
   it('derives a sync atom', () => {
     const countAtom = atom(12);
     const doubledAtom = eagerAtom((get) => get(countAtom) * 2);

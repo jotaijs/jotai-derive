@@ -1,5 +1,5 @@
 import { atom } from 'jotai/vanilla';
-import type { Atom } from 'jotai/vanilla';
+import type { Atom, WritableAtom, Getter, Setter } from 'jotai/vanilla';
 import { getPromiseMeta, setPromiseMeta } from './isPromise.js';
 
 export type AwaitedAll<T extends readonly unknown[]> = {
@@ -32,7 +32,14 @@ interface EagerGetter {
    */
   all<T extends readonly Atom<unknown>[]>(atoms: T): AwaitedAll<T>;
 }
+
 type Read<Value> = (get: EagerGetter) => Value;
+
+type Write<Args extends unknown[], Result> = (
+  get: Getter,
+  set: Setter,
+  ...args: Args
+) => Result;
 
 const NotYet = Symbol(
   '(jotai-eager) Not all dependencies were fulfilled. Are you a dev? Call `isEagerError(e)` to detect this thrown value and rethrow it, as its handled by the library.',
@@ -106,31 +113,53 @@ type AsyncReadFunctionError =
  * @param args A sync read function that can read async atoms directly using the `get` parameter.
  * @returns An eager atom
  */
+// writable atom
+export function eagerAtom<Value, Args extends unknown[], Result>(
+  // NOTE: Wrapping in [] to avoid spreading the operation over union elements
+  ...args: [Value] extends [PromiseLike<unknown>]
+    ? [AsyncReadFunctionError]
+    : [read: Read<Value>, write: Write<Args, Result>]
+): WritableAtom<Promise<Value> | Value, Args, Result>;
+
+// read-only atom
 export function eagerAtom<Value>(
   // NOTE: Wrapping in [] to avoid spreading the operation over union elements
   ...args: [Value] extends [PromiseLike<unknown>]
     ? [AsyncReadFunctionError]
     : [read: Read<Value>]
-): Atom<Promise<Value> | Value> {
-  const [read] = args as [Read<Value>];
+): Atom<Promise<Value> | Value>;
 
-  return atom((get, { signal }) => {
-    const eagerGet = (<Value>(atomToGet: Atom<Value>): Awaited<Value> =>
-      unwrapPromise(get(atomToGet))) as EagerGetter;
+export function eagerAtom<Value, Args extends unknown[], Result>(
+  // NOTE: Wrapping in [] to avoid spreading the operation over union elements
+  ...args: [Value] extends [PromiseLike<unknown>]
+    ? [AsyncReadFunctionError]
+    : [read: Read<Value>, write?: Write<Args, Result>]
+): WritableAtom<Promise<Value> | Value, Args, Result> {
+  const [read, write] = args as [
+    read: Read<Value>,
+    write?: Write<Args, Result>,
+  ];
 
-    eagerGet.all = <T extends readonly Atom<unknown>[]>(atoms: T) =>
-      atoms
-        // Jump-starting every asynchronous atom.
-        .map((a) => get(a))
-        // Unwrapping them one by one, sequentially.
-        .map((v) => unwrapPromise(v)) as AwaitedAll<T>;
+  return atom(
+    (get, { signal }) => {
+      const eagerGet = (<Value>(atomToGet: Atom<Value>): Awaited<Value> =>
+        unwrapPromise(get(atomToGet))) as EagerGetter;
 
-    eagerGet.await = <T>(promiseOrValue: T) => unwrapPromise(promiseOrValue);
-    eagerGet.awaitAll = <T extends readonly unknown[]>(values: T) =>
-      values.map((v) => unwrapPromise(v)) as AwaitedAll<T>;
+      eagerGet.all = <T extends readonly Atom<unknown>[]>(atoms: T) =>
+        atoms
+          // Jump-starting every asynchronous atom.
+          .map((a) => get(a))
+          // Unwrapping them one by one, sequentially.
+          .map((v) => unwrapPromise(v)) as AwaitedAll<T>;
 
-    return resolveSuspension(() => read(eagerGet), signal);
-  });
+      eagerGet.await = <T>(promiseOrValue: T) => unwrapPromise(promiseOrValue);
+      eagerGet.awaitAll = <T extends readonly unknown[]>(values: T) =>
+        values.map((v) => unwrapPromise(v)) as AwaitedAll<T>;
+
+      return resolveSuspension(() => read(eagerGet), signal);
+    },
+    write ?? (() => undefined as unknown as Result),
+  );
 }
 
 /**
