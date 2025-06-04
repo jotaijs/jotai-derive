@@ -1,4 +1,4 @@
-import type { Atom } from 'jotai';
+import type { Atom } from 'jotai/vanilla';
 import { eagerAtom, isEagerError } from 'jotai-eager';
 import { atom, createStore } from 'jotai/vanilla';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';

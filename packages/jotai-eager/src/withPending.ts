@@ -1,11 +1,15 @@
-import { atom } from 'jotai';
-import type { Atom, WritableAtom } from 'jotai';
-import { getPromiseMeta, setPromiseMeta } from './isPromise.ts';
-
-const isPromiseLike = (p: unknown): p is PromiseLike<unknown> =>
-  typeof (p as PromiseLike<unknown>)?.then === 'function';
+import { atom } from 'jotai/vanilla';
+import type { Getter } from 'jotai/vanilla';
+import type { Atom, WritableAtom } from 'jotai/vanilla';
+import { getPromiseMeta, setPromiseMeta, isPromiseLike } from './isPromise.ts';
 
 const defaultFallback = () => undefined;
+
+export interface WithPendingContext<Value> {
+  get: Getter;
+  prev: Awaited<Value> | undefined;
+  pending: PromiseLike<Awaited<Value>>;
+}
 
 export function withPending<Value, Args extends unknown[], Result>(
   anAtom: WritableAtom<Value, Args, Result>,
@@ -18,10 +22,7 @@ export function withPending<
   PendingValue,
 >(
   anAtom: WritableAtom<Value, Args, Result>,
-  fallback: (
-    prev: Awaited<Value> | undefined,
-    pending: PromiseLike<Awaited<Value>>,
-  ) => PendingValue,
+  fallback: (ctx: WithPendingContext<Value>) => PendingValue,
 ): WritableAtom<Awaited<Value> | PendingValue, Args, Result>;
 
 export function withPending<Value>(
@@ -30,10 +31,7 @@ export function withPending<Value>(
 
 export function withPending<Value, PendingValue>(
   anAtom: Atom<Value>,
-  fallback: (
-    prev: Awaited<Value> | undefined,
-    pending: PromiseLike<Awaited<Value>>,
-  ) => PendingValue,
+  fallback: (ctx: WithPendingContext<Value>) => PendingValue,
 ): Atom<Awaited<Value> | PendingValue>;
 
 export function withPending<
@@ -44,8 +42,7 @@ export function withPending<
 >(
   anAtom: WritableAtom<Value, Args, Result> | Atom<Value>,
   fallback: (
-    prev: Awaited<Value> | undefined,
-    pending: PromiseLike<Awaited<Value>>,
+    ctx: WithPendingContext<Value>,
   ) => PendingValue = defaultFallback as never,
 ) {
   type PromiseAndValue = { readonly p?: PromiseLike<unknown> } & (
@@ -92,13 +89,21 @@ export function withPending<
       if (prev && 'v' in prev) {
         return {
           p: promise,
-          f: fallback(prev.v, promise as PromiseLike<Awaited<Value>>),
+          f: fallback({
+            get,
+            prev: prev.v,
+            pending: promise as PromiseLike<Awaited<Value>>,
+          }),
           v: prev.v,
         } as PromiseAndValue;
       }
       return {
         p: promise,
-        f: fallback(undefined, promise as PromiseLike<Awaited<Value>>),
+        f: fallback({
+          get,
+          prev: undefined,
+          pending: promise as PromiseLike<Awaited<Value>>,
+        }),
       } as PromiseAndValue;
     },
     (_get, set) => {
