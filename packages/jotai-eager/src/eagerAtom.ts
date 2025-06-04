@@ -113,7 +113,7 @@ type AsyncReadFunctionError =
  * @param args A sync read function that can read async atoms directly using the `get` parameter.
  * @returns An eager atom
  */
-// writeable atom
+// writable atom
 export function eagerAtom<Value, Args extends unknown[], Result>(
   // NOTE: Wrapping in [] to avoid spreading the operation over union elements
   ...args: [Value] extends [PromiseLike<unknown>]
