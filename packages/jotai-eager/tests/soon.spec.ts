@@ -2,7 +2,7 @@ import { soon } from 'jotai-eager';
 import { atom, createStore } from 'jotai/vanilla';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import { deferred } from './mockUtils.js';
+import { deferred } from './mockUtils.ts';
 
 describe('soon', () => {
   it('correctly infers type when used data-first', () => {

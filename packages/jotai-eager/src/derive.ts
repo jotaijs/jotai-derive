@@ -1,7 +1,7 @@
 import { type Atom, type ExtractAtomValue, atom } from 'jotai/vanilla';
 
-import { soon } from './soon.js';
-import { soonAll } from './soonAll.js';
+import { soon } from './soon.ts';
+import { soonAll } from './soonAll.ts';
 
 type PromiseOrValue<T> = T | Promise<T>;
 

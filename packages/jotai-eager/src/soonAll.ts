@@ -3,7 +3,7 @@ import {
   isKnown,
   isPromiseLike,
   setPromiseMeta,
-} from './isPromise.js';
+} from './isPromise.ts';
 
 type PromiseOrValue<T> = Promise<T> | T;
 

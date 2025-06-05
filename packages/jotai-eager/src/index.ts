@@ -1,6 +1,6 @@
-export { derive } from './derive.js';
-export { eagerAtom, isEagerError } from './eagerAtom.js';
+export { derive } from './derive.ts';
+export { eagerAtom, isEagerError } from './eagerAtom.ts';
 export { loadable } from './loadable.ts';
-export { soon } from './soon.js';
-export { soonAll } from './soonAll.js';
+export { soon } from './soon.ts';
+export { soonAll } from './soonAll.ts';
 export { withPending } from './withPending.ts';

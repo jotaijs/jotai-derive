@@ -2,7 +2,7 @@ import type { Atom } from 'jotai/vanilla';
 import { eagerAtom, isEagerError } from 'jotai-eager';
 import { atom, createStore } from 'jotai/vanilla';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
-import { deferred } from './mockUtils.js';
+import { deferred } from './mockUtils.ts';
 import type { AwaitedAll } from '../src/eagerAtom.ts';
 
 describe('AwaitedAll<T>', () => {

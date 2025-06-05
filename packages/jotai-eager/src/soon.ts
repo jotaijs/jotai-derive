@@ -1,4 +1,4 @@
-import { getPromiseMeta, setPromiseMeta } from './isPromise.js';
+import { getPromiseMeta, setPromiseMeta } from './isPromise.ts';
 
 /**
  * Executes `process` with `data` as input synchronously if `data` is known, meaning

@@ -2,7 +2,7 @@ import { derive } from 'jotai-eager';
 import { type Atom, atom, createStore } from 'jotai/vanilla';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 
-import { deferred } from './mockUtils.js';
+import { deferred } from './mockUtils.ts';
 
 describe('derive', () => {
   let store: ReturnType<typeof createStore>;
