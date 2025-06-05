@@ -1,7 +1,7 @@
 import {
   getFulfilledValue,
   isKnown,
-  isPromise,
+  isPromiseLike,
   setPromiseMeta,
 } from './isPromise.js';
 
@@ -28,7 +28,7 @@ export function soonAll<T extends readonly unknown[]>(values: T): SoonAll<T> {
   return Promise.all(values).then((fulfilledValues) => {
     fulfilledValues.map((fulfilled, idx) => {
       const promise = values[idx];
-      if (isPromise(promise)) {
+      if (isPromiseLike(promise)) {
         setPromiseMeta(promise, { status: 'fulfilled', value: fulfilled });
       }
     });

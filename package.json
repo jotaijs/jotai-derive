@@ -7,7 +7,8 @@
     "test": "pnpm run '/^test:.*/'",
     "test:biome": "biome check --write",
     "test:types": "pnpm run -r --parallel test:types",
-    "test:spec": "vitest run"
+    "test:spec": "vitest run",
+    "vitest": "vitest"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
